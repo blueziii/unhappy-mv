@@ -202,9 +202,9 @@ export const UnhappyVideo: React.FC = () => {
   }, 0);
 
   // 心：只在尾奏那句 “piercing through my heart” 出现（吊灯那一段不用心了）
-  const heartA = false;
+  const heartA = false; // 红心已去掉（用户要求）
   // 红心等末句歌词退场之后再出现（歌词最后一句唱到 82.26s，82.4s 起快速淡出）
-  const heartB = t > 82.8 && t < 85.15;
+  const heartB = false; // 红心已去掉（用户要求）
   const heartApp = heartB
     ? interpolate(t, [82.8, 83.2, 83.9, 84.6], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})
     : 0;
@@ -567,23 +567,6 @@ export const UnhappyVideo: React.FC = () => {
 
         {/* 压暗（百叶窗段落）——已移到背景层 */}
 
-        {/* 结尾：世界褪成线稿 */}
-        {sketch > 0.002 ? (
-          <AbsoluteFill
-            style={{
-              background: C.paper,
-              opacity: 0.94 * sketch,
-              maskImage: `radial-gradient(circle at 50% 56%, rgba(0,0,0,0) 0 ${(1 - sketch) * 78}%, #000 ${(1 - sketch) * 78 + 16}%)`,
-              WebkitMaskImage: `radial-gradient(circle at 50% 56%, rgba(0,0,0,0) 0 ${(1 - sketch) * 78}%, #000 ${(1 - sketch) * 78 + 16}%)`,
-            }}
-          />
-        ) : null}
-        {sketch > 0.002 ? (
-          <AbsoluteFill style={{opacity: sketch}}>
-            <LineRoom progress={sketch} drain={drain} />
-          </AbsoluteFill>
-        ) : null}
-
         {/* 鼓点闪白 */}
         <AbsoluteFill style={{background: C.paper, opacity: flash * (1 - darkAmt), mixBlendMode: 'screen'}} />
         {relightBloom > 0.002 ? (
@@ -609,9 +592,21 @@ export const UnhappyVideo: React.FC = () => {
 
     </AbsoluteFill>
 
+    {/* 结尾：世界褪成一张手绘线稿。画在滤镜之外，纸才是纸色、线才是墨色 */}
+    {sketch > 0.002 ? (
+      <AbsoluteFill style={{transform: worldTf, pointerEvents: 'none'}}>
+        <AbsoluteFill style={{transform: stageTf, pointerEvents: 'none'}}>
+          <AbsoluteFill style={{background: C.paper, opacity: 0.97 * sketch}} />
+          <AbsoluteFill style={{opacity: sketch}}>
+            <LineRoom progress={sketch} drain={drain} />
+          </AbsoluteFill>
+        </AbsoluteFill>
+      </AbsoluteFill>
+    ) : null}
+
     {/* 暗场的音频条画在滤镜之外，否则会被暗角吃掉 */}
     {darkAmt > 0.02 ? (
-      <AbsoluteFill style={{transform: worldTf, opacity: clamp01(darkAmt * 1.4) * (1 - endCard) }}>
+      <AbsoluteFill style={{transform: worldTf, opacity: clamp01(darkAmt * 1.4) * (1 - endCard) * (1 - sketch) }}>
         <AbsoluteFill style={{transform: stageTf}}>
           <Equalizer opacity={0.78} flat={drain * 0.8} night={1} />
         </AbsoluteFill>
@@ -622,7 +617,7 @@ export const UnhappyVideo: React.FC = () => {
     {darkAmt > 0.002 ? (
       <AbsoluteFill style={{transform: worldTf, pointerEvents: 'none'}}>
         <AbsoluteFill style={{transform: stageTf, pointerEvents: 'none'}}>
-          <Moon opacity={clamp01((0.14 + drain * 0.3 + darkAmt * 1.1 - 0.3) / 0.32)} />
+          <Moon opacity={clamp01((0.14 + drain * 0.3 + darkAmt * 1.1 - 0.3) / 0.32) * (1 - sketch)} />
         </AbsoluteFill>
       </AbsoluteFill>
     ) : null}
@@ -635,7 +630,7 @@ export const UnhappyVideo: React.FC = () => {
           width={W}
           height={H}
           viewBox={`0 0 ${W} ${H}`}
-          style={{position: 'absolute', inset: 0, mixBlendMode: 'screen', opacity: darkAmt * lampVis * 0.78 * (1 - endCard)}}
+          style={{position: 'absolute', inset: 0, mixBlendMode: 'screen', opacity: darkAmt * lampVis * 0.78 * (1 - endCard) * (1 - sketch)}}
         >
           <defs>
             <linearGradient id="lampBeam" x1="0" y1="1126" x2="0" y2="1700" gradientUnits="userSpaceOnUse">

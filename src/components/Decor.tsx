@@ -1608,45 +1608,60 @@ export const Moon: React.FC<{opacity: number}> = ({opacity}) => {
 // ——— 线稿版房间：结尾处世界"褪成一张手绘底稿"，开灯时颜色再灌回来 ———
 export const LineRoom: React.FC<{progress: number; drain?: number}> = ({progress, drain = 0}) => {
   const p = clamp01(progress);
-  const ink = withAlpha(mix(C.ink, C.night, 0.25), 0.72);
-  const soft = withAlpha(C.ink, 0.4);
+  const ink = withAlpha(mix(C.ink, C.night, 0.25), 0.92);
+  const soft = withAlpha(C.ink, 0.55);
   // 一笔一笔画出来：每组的 dashoffset 跟着 progress 走
   const draw = (delay: number, len = 1) => {
     const q = clamp01((p - delay) / Math.max(0.001, 1 - delay));
     return {strokeDasharray: len, strokeDashoffset: len * (1 - q), opacity: q > 0 ? 1 : 0} as unknown as {pathLength?: number};
   };
   const floorY = H * 0.775;
+  const clockX = W * 0.115 + 110;
+  const clockY = H * 0.17 + 110;
+  const lampX = W * 0.075;
+  const lampY = H * 0.44;
+  const faceX = 560 + 132;
+  const faceY = H - 680 + 132;
+  const potX = W - 500;
+  const winX = 2930;
+  const winY = 210;
+  const winW = 780;
+  const winH = 580;
+  const hangX = W * 0.5;
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute', inset: 0}}>
-      <g stroke={ink} fill="none" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round">
-        {/* 地面线 + 踢脚线 */}
+      <g stroke={ink} fill="none" strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round">
         <path d={`M-40 ${floorY} L${W + 40} ${floorY + 6}`} {...draw(0)} />
-        <path d={`M-40 ${floorY + 26} L${W + 40} ${floorY + 32}`} stroke={soft} strokeWidth={3} {...draw(0.1)} />
-        {/* 窗户 */}
-        <rect x={2930} y={210} width={780} height={580} rx={26} {...draw(0.05)} />
-        <path d={`M2930 ${210 + 290} L3710 ${210 + 290}`} {...draw(0.2)} />
-        <path d={`M2930 + 390 ${210} L2930 + 390 ${210 + 580}`} {...draw(0.26)} />
-        {/* 吊灯 */}
-        <path d={`M${W * 0.5} 0 L${W * 0.5} 150`} {...draw(0.12)} />
-        <path d={`M${W * 0.5 - 120} 150 L${W * 0.5 + 120} 150 L${W * 0.5 + 210} 330 L${W * 0.5 - 210} 330 Z`} {...draw(0.18)} />
-        {/* 落地灯 */}
-        <path d={`M300 1230 L470 1230 L520 1380 L250 1380 Z`} {...draw(0.24)} />
-        <path d={`M385 1380 L385 ${floorY + 6}`} {...draw(0.3)} />
-        <ellipse cx={385} cy={floorY + 8} rx={110} ry={16} {...draw(0.34)} />
-        {/* 笑脸 */}
-        <circle cx={640} cy={floorY - 250} r={132} {...draw(0.28)} />
-        <path d={`M600 ${floorY - 282} L604 ${floorY - 282}`} strokeWidth={12} {...draw(0.4)} />
-        <path d={`M676 ${floorY - 282} L680 ${floorY - 282}`} strokeWidth={12} {...draw(0.42)} />
-        <path d={`M596 ${floorY - 214} Q640 ${floorY - 182} 684 ${floorY - 214}`} {...draw(0.44)} />
-        {/* 盆栽 */}
-        <path d={`M3120 1560 L3270 1560 L3244 1720 L3146 1720 Z`} {...draw(0.32)} />
-        <path d={`M3208 1560 C3160 1500 3130 1440 3140 1380`} {...draw(0.36)} />
-        <path d={`M3208 1560 C3230 1490 3280 1440 3320 1400`} {...draw(0.38)} />
-        <path d={`M3208 1560 C3200 1470 3196 1420 3204 1360`} {...draw(0.4)} />
-        {/* 挂钟 */}
-        <circle cx={W * 0.325} cy={H * 0.155} r={96} {...draw(0.22)} />
-        <path d={`M${W * 0.325} ${H * 0.155} L${W * 0.325 - 58} ${H * 0.155 - 30}`} {...draw(0.46)} />
-        <path d={`M${W * 0.325} ${H * 0.155} L${W * 0.325 + 18} ${H * 0.155 - 74}`} {...draw(0.5)} />
+        <path d={`M-40 ${floorY + 30} L${W + 40} ${floorY + 36}`} stroke={soft} strokeWidth={3} {...draw(0.08)} />
+        <rect x={winX} y={winY} width={winW} height={winH} rx={26} {...draw(0.04)} />
+        <path d={`M${winX} ${winY + winH * 0.5} L${winX + winW} ${winY + winH * 0.5}`} {...draw(0.16)} />
+        <path d={`M${winX + winW * 0.5} ${winY} L${winX + winW * 0.5} ${winY + winH}`} {...draw(0.2)} />
+        <path d={`M${hangX} 0 L${hangX} 150`} {...draw(0.1)} />
+        <path d={`M${hangX - 120} 150 L${hangX + 120} 150 L${hangX + 210} 330 L${hangX - 210} 330 Z`} {...draw(0.14)} />
+        <path d={`M${lampX + 60} ${lampY + 160} L${lampX + 230} ${lampY + 160} L${lampX + 280} ${lampY + 310} L${lampX + 10} ${lampY + 310} Z`} {...draw(0.22)} />
+        <path d={`M${lampX + 145} ${lampY + 310} L${lampX + 145} ${floorY + 4}`} {...draw(0.28)} />
+        <ellipse cx={lampX + 145} cy={floorY + 6} rx={110} ry={16} {...draw(0.32)} />
+        <circle cx={faceX} cy={faceY} r={132} {...draw(0.24)} />
+        <path d={`M${faceX - 44} ${faceY - 30} L${faceX - 30} ${faceY - 30}`} strokeWidth={13} {...draw(0.38)} />
+        <path d={`M${faceX + 30} ${faceY - 30} L${faceX + 44} ${faceY - 30}`} strokeWidth={13} {...draw(0.4)} />
+        <path d={`M${faceX - 46} ${faceY + 40} Q${faceX} ${faceY + 74} ${faceX + 46} ${faceY + 40}`} {...draw(0.42)} />
+        <path d={`M${potX - 88} ${floorY - 200} L${potX + 88} ${floorY - 200} L${potX + 66} ${floorY} L${potX - 66} ${floorY} Z`} {...draw(0.3)} />
+        {[-52, -26, 0, 26, 52].map((ang, i) => {
+          const rad = (ang * Math.PI) / 180;
+          const len = 300 - Math.abs(ang) * 1.1;
+          const tx = potX + Math.sin(rad) * len;
+          const ty = floorY - 200 - Math.cos(rad) * len;
+          return (
+            <path
+              key={i}
+              d={`M${potX} ${floorY - 200} Q${potX + (tx - potX) * 0.35} ${floorY - 200 - len * 0.75} ${tx} ${ty}`}
+              {...draw(0.32 + i * 0.025)}
+            />
+          );
+        })}
+        <circle cx={clockX} cy={clockY} r={96} {...draw(0.18)} />
+        <path d={`M${clockX} ${clockY} L${clockX - 58} ${clockY - 30}`} {...draw(0.44)} />
+        <path d={`M${clockX} ${clockY} L${clockX + 18} ${clockY - 74}`} {...draw(0.46)} />
       </g>
     </svg>
   );
