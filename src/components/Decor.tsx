@@ -1606,116 +1606,143 @@ export const Moon: React.FC<{opacity: number}> = ({opacity}) => {
 };
 
 // ——— 线稿版房间：结尾处世界"褪成一张手绘底稿"，开灯时颜色再灌回来 ———
-export const LineRoom: React.FC<{progress: number; drain?: number}> = ({progress, drain = 0}) => {
+// 所有坐标都从真实组件反推（WallClock / Lamp / Plant / Mug / Polaroids / RainWindow），不是估的
+export const LineRoom: React.FC<{progress: number}> = ({progress}) => {
   const p = clamp01(progress);
   const ink = withAlpha(mix(C.ink, C.night, 0.25), 0.92);
-  const soft = withAlpha(C.ink, 0.55);
-  // 一笔一笔画出来：每组的 dashoffset 跟着 progress 走
-  const draw = (delay: number, len = 1) => {
+  const soft = withAlpha(C.ink, 0.5);
+  const draw = (delay: number) => {
     const q = clamp01((p - delay) / Math.max(0.001, 1 - delay));
-    return {strokeDasharray: len, strokeDashoffset: len * (1 - q), opacity: q > 0 ? 1 : 0} as unknown as {pathLength?: number};
+    return {strokeDasharray: 1, strokeDashoffset: 1 - q, opacity: q > 0 ? 1 : 0} as unknown as {pathLength?: number};
   };
-  const floorY = H * 0.775;
-  const clockX = W * 0.132;
-  const clockY = H * 0.25;
-  const clockR = W * 0.049;
-  const lampX = W * 0.012;
-  const lampY = H * 0.45;
-  const lampW = W * 0.103;
-  const lampH = H * 0.062;
-  const faceX = 560 + 132;
-  const faceY = H - 680 + 132;
+  const D = (delay: number) => ({...draw(delay), pathLength: 1}) as unknown as {pathLength?: number};
+
+  // —— 真实几何 ——
+  const floorY = H * 0.775; // 1674
+  const clockCx = W * 0.115 + 190;
+  const clockCy = H * 0.17 + 190;
+  const clockR = 150;
+  const faceCx = 560 + 132.5;
+  const faceCy = H - 680 + 132.5;
   const potX = W - 500;
-  const mugX = W * 0.318;
-  const mugY = H * 0.845;
   const winX = 2930;
   const winY = 210;
   const winW = 780;
   const winH = 580;
   const hangX = W * 0.5;
+  // 彩签：跟 Polaroids 完全一致的槽位/尺寸/角度
+  const cards = [
+    {x: 0.02, y: 0.035, w: 300, rot: -7},
+    {x: 0.885, y: 0.46, w: 250, rot: 9},
+    {x: 0.22, y: 0.12, w: 340, rot: -14},
+    {x: 0.315, y: 0.05, w: 230, rot: 5},
+  ].map((c, i) => ({
+    ...c,
+    h: c.w * [1.26, 1.2, 1.3, 1.34][i],
+    px: c.x * W,
+    py: c.y * H,
+    i,
+  }));
+
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute', inset: 0}}>
       <g stroke={ink} fill="none" strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round">
-        <path d={`M-40 ${floorY} L${W + 40} ${floorY + 6}`} {...draw(0)} />
-        <path d={`M-40 ${floorY + 30} L${W + 40} ${floorY + 36}`} stroke={soft} strokeWidth={3} {...draw(0.08)} />
-        <rect x={winX} y={winY} width={winW} height={winH} rx={26} {...draw(0.04)} />
-        <path d={`M${winX} ${winY + winH * 0.5} L${winX + winW} ${winY + winH * 0.5}`} {...draw(0.16)} />
-        <path d={`M${winX + winW * 0.5} ${winY} L${winX + winW * 0.5} ${winY + winH}`} {...draw(0.2)} />
-        <path d={`M${hangX} 0 L${hangX} 150`} {...draw(0.1)} />
-        <path d={`M${hangX - 120} 150 L${hangX + 120} 150 L${hangX + 210} 330 L${hangX - 210} 330 Z`} {...draw(0.14)} />
-        <path d={`M${lampX + lampW * 0.12} ${lampY} L${lampX + lampW * 0.88} ${lampY} L${lampX + lampW} ${lampY + lampH} L${lampX} ${lampY + lampH} Z`} {...draw(0.22)} />
-        <path d={`M${lampX + lampW * 0.5} ${lampY + lampH} L${lampX + lampW * 0.5} ${H * 0.795}`} {...draw(0.28)} />
-        <ellipse cx={lampX + lampW * 0.5} cy={H * 0.8} rx={W * 0.045} ry={H * 0.012} {...draw(0.32)} />
-        <circle cx={faceX} cy={faceY} r={132} {...draw(0.24)} />
-        <path d={`M${faceX - 44} ${faceY - 30} L${faceX - 30} ${faceY - 30}`} strokeWidth={13} {...draw(0.38)} />
-        <path d={`M${faceX + 30} ${faceY - 30} L${faceX + 44} ${faceY - 30}`} strokeWidth={13} {...draw(0.4)} />
-        <path d={`M${faceX - 46} ${faceY + 40} Q${faceX} ${faceY + 74} ${faceX + 46} ${faceY + 40}`} {...draw(0.42)} />
-        <path d={`M${potX - 88} ${floorY} L${potX + 88} ${floorY} L${potX + 66} ${floorY + 200} L${potX - 66} ${floorY + 200} Z`} {...draw(0.3)} />
-        {[-52, -26, 0, 26, 52].map((ang, i) => {
+        {/* 地平线 + 踢脚线 */}
+        <path d={`M-40 ${floorY} L${W + 40} ${floorY}`} {...D(0)} />
+        <path d={`M-40 ${floorY + 34} L${W + 40} ${floorY + 34}`} stroke={soft} strokeWidth={4} {...D(0.06)} />
+        {/* 墙角 */}
+        <path d={`M${W * 0.155} 0 L${W * 0.155} ${floorY}`} stroke={soft} strokeWidth={4} {...D(0.1)} />
+        <path d={`M${W * 0.925} 0 L${W * 0.925} ${floorY}`} stroke={soft} strokeWidth={4} {...D(0.11)} />
+        {/* 地板拼缝 */}
+        {[0, 1, 2, 3, 4, 5].map((k) => (
+          <path
+            key={`f${k}`}
+            d={`M${W * (0.5 + (k - 2.5) * 0.055)} ${floorY + 10} L${W * (0.5 + (k - 2.5) * 0.2)} ${H}`}
+            stroke={soft}
+            strokeWidth={3}
+            {...D(0.3 + k * 0.01)}
+          />
+        ))}
+        {/* 窗户（RainWindow 的真实位置） */}
+        <rect x={winX} y={winY} width={winW} height={winH} rx={26} {...D(0.04)} />
+        <path d={`M${winX} ${winY + winH * 0.5} L${winX + winW} ${winY + winH * 0.5}`} {...D(0.14)} />
+        <path d={`M${winX + winW * 0.5} ${winY} L${winX + winW * 0.5} ${winY + winH}`} {...D(0.18)} />
+        {/* 窗外：月牙 + 远处地平线 */}
+        <path d={`M${winX + winW * 0.8} ${winY + 90} A70 70 0 1 0 ${winX + winW * 0.8} ${winY + 230}`} {...D(0.4)} />
+        <path d={`M${winX + 40} ${winY + winH * 0.88} L${winX + winW - 40} ${winY + winH * 0.88}`} stroke={soft} strokeWidth={3} {...D(0.42)} />
+        {/* 吊灯 */}
+        <path d={`M${hangX} 0 L${hangX} 150`} {...D(0.08)} />
+        <path d={`M${hangX - 120} 150 L${hangX + 120} 150 L${hangX + 210} 330 L${hangX - 210} 330 Z`} {...D(0.12)} />
+        {/* 落地灯：真实形状是上宽下窄的锥形灯罩 */}
+        <path d={`M160 948 L440 948 L450 974 L150 974 Z`} {...D(0.2)} />
+        <path d={`M150 974 L450 974 L396 1114 L204 1114 Z`} {...D(0.22)} />
+        <ellipse cx={300} cy={1118} rx={96} ry={16} {...D(0.24)} />
+        <path d={`M300 1114 L300 ${floorY}`} strokeWidth={10} {...D(0.26)} />
+        <ellipse cx={300} cy={floorY + 8} rx={110} ry={20} {...D(0.28)} />
+        {/* 笑脸 */}
+        <circle cx={faceCx} cy={faceCy} r={132} {...D(0.3)} />
+        <path d={`M${faceCx - 46} ${faceCy - 28} L${faceCx - 30} ${faceCy - 28}`} strokeWidth={14} {...D(0.34)} />
+        <path d={`M${faceCx + 30} ${faceCy - 28} L${faceCx + 46} ${faceCy - 28}`} strokeWidth={14} {...D(0.35)} />
+        <path d={`M${faceCx - 44} ${faceCy + 42} Q${faceCx} ${faceCy + 74} ${faceCx + 44} ${faceCy + 42}`} {...D(0.36)} />
+        {/* 盆栽（盆坐在踢脚线上，底边到地面线以下） */}
+        <path d={`M${potX - 110} ${floorY} L${potX + 110} ${floorY} L${potX + 86} ${floorY + 200} L${potX - 86} ${floorY + 200} Z`} {...D(0.3)} />
+        {[-52, -26, 0, 26, 52].map((ang, k) => {
           const rad = (ang * Math.PI) / 180;
           const len = 300 - Math.abs(ang) * 1.1;
           const tx = potX + Math.sin(rad) * len;
           const ty = floorY - Math.cos(rad) * len;
           return (
             <path
-              key={i}
+              key={`leaf${k}`}
               d={`M${potX} ${floorY} Q${potX + (tx - potX) * 0.35} ${floorY - len * 0.75} ${tx} ${ty}`}
-              {...draw(0.32 + i * 0.025)}
+              {...D(0.32 + k * 0.02)}
             />
           );
         })}
-        {/* 墙角 */}
-        <path d={`M${W * 0.155} 0 L${W * 0.155} ${floorY}`} stroke={soft} strokeWidth={4} {...draw(0.12)} />
-        <path d={`M${W * 0.925} 0 L${W * 0.925} ${floorY}`} stroke={soft} strokeWidth={4} {...draw(0.13)} />
-        {/* 地板拼缝（近大远小的斜线） */}
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <path
-            key={`f${i}`}
-            d={`M${W * (0.5 + (i - 2.5) * 0.06)} ${floorY + 8} L${W * (0.5 + (i - 2.5) * 0.22)} ${H}`}
-            stroke={soft}
-            strokeWidth={3}
-            {...draw(0.34 + i * 0.01)}
-          />
+        {/* 挂钟（真实：left W*0.115 / top H*0.17，圆 r150） */}
+        <circle cx={clockCx} cy={clockCy} r={clockR} {...D(0.16)} />
+        <circle cx={clockCx} cy={clockCy} r={clockR - 18} stroke={soft} strokeWidth={3} {...D(0.18)} />
+        <path d={`M${clockCx} ${clockCy} L${clockCx} ${clockCy - 94}`} {...D(0.38)} />
+        <path d={`M${clockCx} ${clockCy} L${clockCx + clockR * 0.42} ${clockCy - clockR * 0.62}`} strokeWidth={5} {...D(0.4)} />
+        {/* 彩灯串 */}
+        <path d={`M-40 ${H * 0.055} Q${W * 0.28} ${H * 0.16} ${W * 0.52} ${H * 0.075} T${W + 40} ${H * 0.06}`} {...D(0.2)} />
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
+          const x = W * (0.06 + k * 0.12);
+          const y = H * (0.075 + Math.sin((k / 7) * Math.PI) * 0.035) + 26;
+          return <circle key={`b${k}`} cx={x} cy={y} r={9} {...D(0.24 + k * 0.012)} />;
+        })}
+        {/* 墙上的彩签：位置/尺寸/角度与真实一致 */}
+        {cards.map((c) => (
+          <g key={`c${c.i}`} transform={`rotate(${c.rot} ${c.px} ${c.py})`}>
+            <rect x={c.px} y={c.py} width={c.w} height={c.h} rx={6} {...D(0.36 + c.i * 0.03)} />
+            <rect
+              x={c.px + 18}
+              y={c.py + 18}
+              width={c.w - 36}
+              height={c.h - 36 - c.w * 0.22}
+              {...D(0.42 + c.i * 0.03)}
+            />
+            <path
+              d={`M${c.px + 40} ${c.py + c.h - 58} L${c.px + c.w - 60} ${c.py + c.h - 58}`}
+              stroke={soft}
+              strokeWidth={4}
+              {...D(0.48 + c.i * 0.02)}
+            />
+          </g>
         ))}
-        {/* 彩灯串：一根下垂的线 + 一排灯泡 */}
-        <path d={`M-40 ${H * 0.055} Q${W * 0.28} ${H * 0.16} ${W * 0.52} ${H * 0.075} T${W + 40} ${H * 0.06}`} {...draw(0.2)} />
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
-          const x = W * (0.06 + i * 0.12);
-          const y = H * (0.075 + Math.sin((i / 7) * Math.PI) * 0.035) + 26;
-          return <circle key={`b${i}`} cx={x} cy={y} r={9} {...draw(0.26 + i * 0.012)} />;
-        })}
-        {/* 墙上的彩签（拍立得） */}
-        {[
-          {x: 0.05, y: 0.10, r: -7, w: 300},
-          {x: 0.845, y: 0.44, r: 9, w: 250},
-          {x: 0.235, y: 0.115, r: -14, w: 340},
-          {x: 0.60, y: 0.055, r: 5, w: 230},
-        ].map((c, i) => {
-          const w0 = c.w;
-          const h0 = w0 * 1.28;
-          const cx0 = W * c.x;
-          const cy0 = H * c.y;
-          return (
-            <g key={`p${i}`} transform={`rotate(${c.r} ${cx0} ${cy0})`}>
-              <rect x={cx0} y={cy0} width={w0} height={h0} rx={6} {...draw(0.36 + i * 0.03)} />
-              <rect x={cx0 + 22} y={cy0 + 22} width={w0 - 44} height={h0 - 44 - w0 * 0.28} {...draw(0.42 + i * 0.03)} />
-              <path d={`M${cx0 + 40} ${cy0 + h0 - 60} L${cx0 + w0 - 60} ${cy0 + h0 - 60}`} stroke={soft} strokeWidth={4} {...draw(0.48 + i * 0.02)} />
-            </g>
-          );
-        })}
-        {/* 窗外的月亮（月牙） */}
-        <path d={`M${winX + winW * 0.78} ${winY + 96} A74 74 0 1 0 ${winX + winW * 0.78} ${winY + 236}`} {...draw(0.44)} />
-        <path d={`M${winX + winW * 0.62} ${winY + winH * 0.9} L${winX + winW * 0.95} ${winY + winH * 0.9}`} stroke={soft} strokeWidth={3} {...draw(0.46)} />
-        {/* 地上的马克杯 */}
-        <path d={`M${mugX - 66} ${mugY - 96} L${mugX + 66} ${mugY - 96} L${mugX + 66} ${mugY - 22} Q${mugX + 66} ${mugY + 8} ${mugX + 30} ${mugY + 8} L${mugX - 30} ${mugY + 8} Q${mugX - 66} ${mugY + 8} ${mugX - 66} ${mugY - 22} Z`} {...draw(0.4)} />
-        <path d={`M${mugX + 66} ${mugY - 76} Q${mugX + 104} ${mugY - 72} ${mugX + 104} ${mugY - 46} Q${mugX + 104} ${mugY - 20} ${mugX + 66} ${mugY - 16}`} {...draw(0.42)} />
+        {/* 地上的马克杯（真实：left W*0.30 / top H*0.79，svg 240） */}
+        <path
+          d={`M${W * 0.30 + 40} ${H * 0.79 + 96} L${W * 0.30 + 176} ${H * 0.79 + 96} V${H * 0.79 + 150} Q${W * 0.30 + 176} ${H * 0.79 + 196} ${W * 0.30 + 130} ${H * 0.79 + 196} H${W * 0.30 + 86} Q${W * 0.30 + 40} ${H * 0.79 + 196} ${W * 0.30 + 40} ${H * 0.79 + 150} Z`}
+          {...D(0.44)}
+        />
+        <path
+          d={`M${W * 0.30 + 176} ${H * 0.79 + 108} Q${W * 0.30 + 214} ${H * 0.79 + 112} ${W * 0.30 + 214} ${H * 0.79 + 142} Q${W * 0.30 + 214} ${H * 0.79 + 172} ${W * 0.30 + 176} ${H * 0.79 + 176}`}
+          {...D(0.46)}
+        />
         {/* 墙上的小涂鸦 */}
-        <path d={`M${W * 0.30} ${H * 0.30} l34 0 M${W * 0.30 + 17} ${H * 0.30 - 17} l0 34`} stroke={soft} strokeWidth={4} {...draw(0.5)} />
-        <path d={`M${W * 0.40} ${H * 0.35} l16 -26 l16 26 z`} stroke={soft} strokeWidth={4} {...draw(0.52)} />
-        <path d={`M${W * 0.36} ${H * 0.60} l24 0 M${W * 0.36} ${H * 0.60} q8 14 20 0`} stroke={soft} strokeWidth={4} {...draw(0.54)} />
-        <circle cx={clockX} cy={clockY} r={clockR} {...draw(0.18)} />
-        <path d={`M${clockX} ${clockY} L${clockX - clockR * 0.6} ${clockY - clockR * 0.32}`} {...draw(0.44)} />
-        <path d={`M${clockX} ${clockY} L${clockX + clockR * 0.19} ${clockY - clockR * 0.78}`} {...draw(0.46)} />
+        <path d={`M${W * 0.40} ${H * 0.28} l30 0 M${W * 0.40 + 15} ${H * 0.28 - 15} l0 30`} stroke={soft} strokeWidth={4} {...D(0.5)} />
+        <path d={`M${W * 0.47} ${H * 0.33} l14 -24 l14 24 z`} stroke={soft} strokeWidth={4} {...D(0.52)} />
+        <path d={`M${W * 0.42} ${H * 0.42} l22 0 M${W * 0.42} ${H * 0.42} q7 12 18 0`} stroke={soft} strokeWidth={4} {...D(0.54)} />
       </g>
     </svg>
   );

@@ -598,7 +598,7 @@ export const UnhappyVideo: React.FC = () => {
         <AbsoluteFill style={{transform: stageTf, pointerEvents: 'none'}}>
           <AbsoluteFill style={{background: C.paper, opacity: 0.97 * sketch}} />
           <AbsoluteFill style={{opacity: sketch}}>
-            <LineRoom progress={sketch} drain={drain} />
+            <LineRoom progress={sketch} />
           </AbsoluteFill>
         </AbsoluteFill>
       </AbsoluteFill>
