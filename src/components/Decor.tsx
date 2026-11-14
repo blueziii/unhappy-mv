@@ -1630,6 +1630,15 @@ export const LineRoom: React.FC<{progress: number; lampFlicker?: number}> = ({pr
   const winW = 780;
   const winH = 580;
   const hangX = W * 0.5;
+  // 彩灯串：与 StringLights 完全同一套坐标（x 从 120 到 W-120，y = 120 + sin(kπ)*130）
+  const _lampN = 15;
+  const stringLightBulbs = Array.from({length: _lampN}, (_, i) => {
+    const k = i / (_lampN - 1);
+    return {x: 120 + k * (W - 240), y: 120 + Math.sin(k * Math.PI) * 130};
+  });
+  const stringLightPath = stringLightBulbs
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(' ');
   // 彩签：跟 Polaroids 完全一致的槽位/尺寸/角度
   const cards = [
     {x: 0.02, y: 0.035, w: 300, rot: -7},
@@ -1679,13 +1688,13 @@ export const LineRoom: React.FC<{progress: number; lampFlicker?: number}> = ({pr
         <ellipse cx={300} cy={1118} rx={96} ry={16} {...D(0.24)} />
         <path d={`M300 1114 L300 ${floorY}`} strokeWidth={10} {...D(0.26)} />
         <ellipse cx={300} cy={floorY + 8} rx={110} ry={20} {...D(0.28)} />
-        {/* 线稿里的灯先亮：罩子被自己打亮 + 一圈暖光 */}
+        {/* 线稿里的灯先亮：亮的是头顶那盏吊灯（不是落地灯） */}
         {lampFlicker > 0.02 ? (
           <g opacity={lampFlicker}>
-            <ellipse cx={300} cy={1090} rx={230} ry={200} fill={withAlpha(C.butter, 0.34)} style={{filter: 'blur(46px)'}} stroke="none" />
-            <path d={`M150 974 L450 974 L396 1114 L204 1114 Z`} stroke={withAlpha(C.butter, 0.95)} strokeWidth={9} />
-            <ellipse cx={300} cy={1118} rx={96} ry={16} stroke={withAlpha(C.butter, 1)} strokeWidth={7} />
-            <path d={`M240 1140 L360 1140 L470 ${floorY + 10} L130 ${floorY + 10} Z`} stroke={withAlpha(C.butter, 0.35)} strokeWidth={3} />
+            <ellipse cx={hangX} cy={300} rx={300} ry={280} fill={withAlpha(C.butter, 0.32)} style={{filter: 'blur(56px)'}} stroke="none" />
+            <path d={`M${hangX - 120} 150 L${hangX + 120} 150 L${hangX + 210} 330 L${hangX - 210} 330 Z`} stroke={withAlpha(C.butter, 0.95)} strokeWidth={9} />
+            <ellipse cx={hangX} cy={332} rx={210} ry={20} stroke={withAlpha(C.butter, 1)} strokeWidth={8} />
+            <path d={`M${hangX - 200} 344 L${hangX + 200} 344 L${hangX + 520} ${floorY + 40} L${hangX - 520} ${floorY + 40} Z`} stroke={withAlpha(C.butter, 0.3)} strokeWidth={3} />
           </g>
         ) : null}
         {/* 笑脸 */}
@@ -1713,13 +1722,14 @@ export const LineRoom: React.FC<{progress: number; lampFlicker?: number}> = ({pr
         <circle cx={clockCx} cy={clockCy} r={clockR - 18} stroke={soft} strokeWidth={3} {...D(0.18)} />
         <path d={`M${clockCx} ${clockCy} L${clockCx} ${clockCy - 94}`} {...D(0.38)} />
         <path d={`M${clockCx} ${clockCy} L${clockCx + clockR * 0.42} ${clockCy - clockR * 0.62}`} strokeWidth={5} {...D(0.4)} />
-        {/* 彩灯串 */}
-        <path d={`M-40 ${H * 0.055} Q${W * 0.28} ${H * 0.16} ${W * 0.52} ${H * 0.075} T${W + 40} ${H * 0.06}`} {...D(0.2)} />
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
-          const x = W * (0.06 + k * 0.12);
-          const y = H * (0.075 + Math.sin((k / 7) * Math.PI) * 0.035) + 26;
-          return <circle key={`b${k}`} cx={x} cy={y} r={9} {...D(0.24 + k * 0.012)} />;
-        })}
+        {/* 彩灯串：坐标照抄 StringLights（15 个灯泡，绳下垂 130px） */}
+        <path d={stringLightPath} {...D(0.2)} />
+        {stringLightBulbs.map((p, k) => (
+          <g key={`b${k}`}>
+            <path d={`M${p.x} ${p.y} L${p.x} ${p.y + 26}`} strokeWidth={3} {...D(0.24 + k * 0.008)} />
+            <circle cx={p.x} cy={p.y + 32} r={15} {...D(0.26 + k * 0.008)} />
+          </g>
+        ))}
         {/* 墙上的彩签：位置/尺寸/角度与真实一致 */}
         {cards.map((c) => (
           <g key={`c${c.i}`} transform={`rotate(${c.rot} ${c.px} ${c.py})`}>

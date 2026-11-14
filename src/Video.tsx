@@ -109,7 +109,7 @@ export const UnhappyVideo: React.FC = () => {
 
   // ---- 结尾复位：唱完之后房间重新亮起来，最后停回第 0 帧的样子，循环播放没有接缝 ----
   // 88.55s 起灯“啪”地闪两下重新亮起；90–93.4s 冷色调褪回暖色；94.8–97.6s 环境收回开场姿态
-  const relightFx = interpolate(t, [85.80, 85.92, 86.02, 86.14, 86.24, 86.46], [0, 1, 0.12, 0.86, 0.2, 1], {
+  const relightFx = interpolate(t, [85.90, 85.98, 86.08, 86.16, 86.26, 86.50], [0, 1, 0.12, 0.86, 0.2, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -132,10 +132,10 @@ export const UnhappyVideo: React.FC = () => {
   const relightCol = 1 - (1 - relight) * (1 - relight);
   const keep = 1 - relightCol;
   // 冷色调的退场：跟着灯闪那一下直接切回暖色（用户要求：不要 1 秒慢慢变亮）
-  const warmCut = interpolate(t, [85.80, 86.05], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const warmCut = interpolate(t, [85.90, 86.03], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 结尾：世界褪成一张手绘线稿（从边缘往里），开灯时颜色重新灌回来
   const sketchIn = interpolate(t, [82.3, 84.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const sketchOut = interpolate(t, [85.8, 86.35], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const sketchOut = t < 85.95 ? 1 : 0; // 用户要求：线稿瞬间消失，不要慢慢描掉
   // 线稿里的那盏灯先闪三下，然后才轮到真实的灯
   const sketchFlicker = interpolate(
     t,
@@ -252,7 +252,7 @@ export const UnhappyVideo: React.FC = () => {
     {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}
   );
   // 结尾：灯重新亮起（闪两下再稳住）
-  const lampOn = t >= 85.75 ? relightFx : lampOnBase;
+  const lampOn = t >= 85.85 ? relightFx : lampOnBase;
   // 关灯那一下灯罩的抖动
   const lampJolt = t >= 48.94 && t < 49.7 ? Math.sin((t - 48.94) * 74) * 6 * (1 - (t - 48.94) / 0.76) : 0;
   // 灯灭之后整幅画面变暗、换色调（压暗但依然看得清东西）
