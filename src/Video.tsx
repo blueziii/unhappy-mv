@@ -609,7 +609,7 @@ export const UnhappyVideo: React.FC = () => {
           <AbsoluteFill
             style={{
               background: mix(C.night, C.cream, clamp01((t - 85.9) / 0.3)),
-              opacity: 0.97 * sketchIn * (1 - clamp01((t - 86.2) / 0.22)),
+              opacity: 0.97 * sketchIn * (1 - clamp01((t - 86.16) / 0.16)),
             }}
           />
           <AbsoluteFill style={{opacity: sketch}}>
