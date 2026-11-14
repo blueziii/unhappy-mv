@@ -2,8 +2,15 @@ import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {C, H, W, mix, rgba} from '../theme';
 import {pulse} from '../lib/beat';
+import grain0 from '../assets/tex/grain_0.png';
 import grain1 from '../assets/tex/grain_1.png';
+import grain2 from '../assets/tex/grain_2.png';
 import grain3 from '../assets/tex/grain_3.png';
+
+// 4 张颗粒轮流上，画面才有"胶片呼吸"，不再是一张死图铺到底
+const GRAINS = [grain0, grain1, grain2, grain3];
+const grainAt = (f: number, k: number) => GRAINS[(Math.floor(f / 3) + k) % GRAINS.length];
+const drift = (f: number, speed: number, span: number) => `${((f * speed) % span).toFixed(2)}px`;
 
 const parse = (color: string): [number, number, number] => {
   if (color.startsWith('#')) {
@@ -101,9 +108,9 @@ export const Backdrop: React.FC<BackdropProps> = ({top, bottom, blobA, blobB, bl
       {/* 纸纹 */}
       <AbsoluteFill
         style={{
-          backgroundImage: `url(${grain1})`,
+          backgroundImage: `url(${grainAt(f, 0)})`,
           backgroundSize: '560px 560px',
-          backgroundPosition: `${(f * 13) % 560}px ${(f * 7) % 560}px`,
+          backgroundPosition: `${drift(f, 0.35, 560)} ${drift(f, 0.22, 560)}`,
           opacity: 0.16,
           mixBlendMode: 'multiply',
         }}
@@ -111,9 +118,9 @@ export const Backdrop: React.FC<BackdropProps> = ({top, bottom, blobA, blobB, bl
       {/* 慢速颗粒闪动 */}
       <AbsoluteFill
         style={{
-          backgroundImage: `url(${grain3})`,
+          backgroundImage: `url(${grainAt(f, 2)})`,
           backgroundSize: '300px 300px',
-          backgroundPosition: `${(f * 29) % 300}px ${(f * 41) % 300}px`,
+          backgroundPosition: `${drift(f, 0.5, 300)} ${drift(f, -0.31, 300)}`,
           opacity: 0.1 + 0.04 * p,
           mixBlendMode: 'soft-light',
         }}

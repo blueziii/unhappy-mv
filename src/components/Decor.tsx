@@ -581,7 +581,7 @@ export const RainWindow: React.FC<{grow: number; dim: number; opacity: number}> 
           0.5
         )} 100%)`,
         border: `${frame}px solid ${withAlpha(C.paper, lerp(0.92, 0.22, g))}`,
-        boxShadow: `inset 0 0 90px ${withAlpha(C.ink, 0.18)}, 0 26px 60px ${withAlpha(C.ink, 0.12)}`,
+        boxShadow: `inset 0 0 90px ${withAlpha(C.ink, 0.18)}, 34px 26px 60px ${withAlpha(C.ink, 0.14)}`,
         opacity,
       }}
     >
@@ -900,7 +900,7 @@ export const Polaroids: React.FC<{opacity: number; drain?: number; night?: numbe
               background: withAlpha(C.paper, 0.94 - 0.5 * clamp01(night)),
               padding: 18,
               borderRadius: 6,
-              boxShadow: `0 24px 50px ${withAlpha(C.ink, 0.18 + 0.1 * clamp01(night))}`,
+              boxShadow: `22px 30px 54px ${withAlpha(C.ink, 0.2 + 0.1 * clamp01(night))}, 6px 9px 0 ${withAlpha(C.ink, 0.06)}`,
             }}
           >
             {/* 有的照片用胶带贴在墙上 */}
@@ -914,7 +914,7 @@ export const Polaroids: React.FC<{opacity: number; drain?: number; night?: numbe
                   height: 32,
                   transform: `rotate(${i === 1 ? -5 : 4}deg)`,
                   background: withAlpha(i === 1 ? C.mint : C.butter, 0.55),
-                  boxShadow: `0 2px 6px ${withAlpha(C.ink, 0.1)}`,
+                  boxShadow: `3px 4px 7px ${withAlpha(C.ink, 0.12)}`,
                 }}
               />
             ) : null}

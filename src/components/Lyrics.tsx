@@ -118,7 +118,10 @@ const WordSticker: React.FC<{
                   C.ink,
                   0.12 * (1 - peel)
                 )}`
-              : `0 13px 0 ${withAlpha(C.ink, 0.14)}, 0 30px 46px ${withAlpha(C.ink, 0.11)}`
+              : `13px 15px 0 ${withAlpha(C.ink, 0.13)}, 28px 34px 46px ${withAlpha(C.ink, 0.12)}, inset 0 0 0 2px ${withAlpha(
+                  C.paper,
+                  0.26,
+                )}, inset -7px -9px 14px ${withAlpha(C.ink, 0.09)}`
             : 'none',
         textShadow: ghost ?? (dark && lit && !sticker ? `0 0 30px ${withAlpha(C.paper, 0.3)}` : undefined),
         textDecoration: ugly && active ? 'line-through' : undefined,
