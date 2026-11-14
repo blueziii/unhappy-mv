@@ -251,10 +251,19 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                 );
               })}
               </div>
-              {line.zh ? (
+              {line.zh ? (() => {
+                // 中文跟英文贴纸同款动效：弹入 + 常态浮动 + 关键词圈"画出来"
+                const zs = spring({frame: Math.max(0, f - startF - 5), fps: FPS, config: {mass: 0.6, damping: 11, stiffness: 160}});
+                const zPop = Math.max(0, Math.min(1.28, zs));
+                const zBob = Math.sin(f / (26 + (line.i % 3) * 6) + line.i * 1.3) * 7 * clamp01(zPop);
+                const zSway = Math.sin(f / 34 + line.i * 0.9) * 0.7;
+                const ringIn = clamp01((f - startF - 22) / 12);
+                return (
                 <div
                   style={{
                     marginTop: size * ZH_MT,
+                    transform: `translateY(${((1 - zPop) * 46 + zBob).toFixed(1)}px) rotate(${zSway.toFixed(2)}deg) scale(${zPop.toFixed(3)})`,
+                    opacity: clamp01((f - startF - 2) / 8),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -305,8 +314,8 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                                   dark ? '#F6A896' : C.candy
                                 }`,
                                 borderRadius: '50%',
-                                transform: 'rotate(-7deg)',
-                                opacity: 0.9,
+                                transform: `rotate(${(-7 + (1 - ringIn) * 14).toFixed(1)}deg) scale(${(0.6 + 0.4 * ringIn).toFixed(2)})`,
+                                opacity: 0.9 * ringIn,
                               }}
                             />
                           </span>
@@ -388,7 +397,8 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                     </div>
                   )}
                 </div>
-              ) : null}
+                );
+              })() : null}
             </div>
           </div>
         );
