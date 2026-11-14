@@ -136,8 +136,8 @@ export const UnhappyVideo: React.FC = () => {
   // 结尾：世界褪成一张手绘线稿（从边缘往里），开灯时颜色重新灌回来
   const sketchIn = interpolate(t, [82.3, 84.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 线稿→开灯：不是硬切，而是一团暖光从吊灯洒开，把线稿一点点冲掉（0.5s）
-  const sketchOut = interpolate(t, [85.95, 86.5], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const litWipe = interpolate(t, [85.95, 86.55], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const sketchOut = interpolate(t, [85.95, 86.4], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const litWipe = interpolate(t, [85.95, 86.45], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 线稿里的那盏灯先闪三下，然后才轮到真实的灯
   const sketchFlicker = interpolate(
     t,
@@ -614,7 +614,7 @@ export const UnhappyVideo: React.FC = () => {
             <AbsoluteFill
               style={{
                 mixBlendMode: 'screen',
-                background: `radial-gradient(circle at 50% 11%, rgba(255,246,222,${(0.9 * (1 - litWipe)).toFixed(3)}) 0%, rgba(255,238,196,${(0.62 * (1 - litWipe)).toFixed(3)}) ${(litWipe * 48).toFixed(1)}%, rgba(255,235,190,0) ${(litWipe * 88 + 10).toFixed(1)}%)`,
+                background: `radial-gradient(circle at 50% 11%, rgba(255,246,222,${(0.42 * (1 - litWipe)).toFixed(3)}) 0%, rgba(255,238,196,${(0.3 * (1 - litWipe)).toFixed(3)}) ${(litWipe * 70).toFixed(1)}%, rgba(255,235,190,0) ${(litWipe * 105 + 5).toFixed(1)}%)`,
               }}
             />
           ) : null}
