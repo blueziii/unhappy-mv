@@ -675,7 +675,7 @@ export const UnhappyVideo: React.FC = () => {
               0.07
             )} 34%, ${rgba(C.butter, 0)} 62%)`,
             mixBlendMode: 'screen',
-            opacity: darkAmt * lampVis * (1.15 + 0.14 * Math.sin(t / 2.4)) * (1 - endCard),
+            opacity: darkAmt * lampVis * (1.15 + 0.14 * Math.sin(t / 2.4)) * (1 - endCard) * (1 - sketch),
           }}
         />
         <AbsoluteFill
@@ -691,7 +691,7 @@ export const UnhappyVideo: React.FC = () => {
               0
             )} 64%)`,
             mixBlendMode: 'screen',
-            opacity: darkAmt * lampVis * (1 - endCard),
+            opacity: darkAmt * lampVis * (1 - endCard) * (1 - sketch),
           }}
         />
         </AbsoluteFill>

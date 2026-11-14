@@ -1616,13 +1616,18 @@ export const LineRoom: React.FC<{progress: number; drain?: number}> = ({progress
     return {strokeDasharray: len, strokeDashoffset: len * (1 - q), opacity: q > 0 ? 1 : 0} as unknown as {pathLength?: number};
   };
   const floorY = H * 0.775;
-  const clockX = W * 0.115 + 110;
-  const clockY = H * 0.17 + 110;
-  const lampX = W * 0.075;
-  const lampY = H * 0.44;
+  const clockX = W * 0.132;
+  const clockY = H * 0.25;
+  const clockR = W * 0.049;
+  const lampX = W * 0.012;
+  const lampY = H * 0.45;
+  const lampW = W * 0.103;
+  const lampH = H * 0.062;
   const faceX = 560 + 132;
   const faceY = H - 680 + 132;
   const potX = W - 500;
+  const mugX = W * 0.318;
+  const mugY = H * 0.845;
   const winX = 2930;
   const winY = 210;
   const winW = 780;
@@ -1638,30 +1643,79 @@ export const LineRoom: React.FC<{progress: number; drain?: number}> = ({progress
         <path d={`M${winX + winW * 0.5} ${winY} L${winX + winW * 0.5} ${winY + winH}`} {...draw(0.2)} />
         <path d={`M${hangX} 0 L${hangX} 150`} {...draw(0.1)} />
         <path d={`M${hangX - 120} 150 L${hangX + 120} 150 L${hangX + 210} 330 L${hangX - 210} 330 Z`} {...draw(0.14)} />
-        <path d={`M${lampX + 60} ${lampY + 160} L${lampX + 230} ${lampY + 160} L${lampX + 280} ${lampY + 310} L${lampX + 10} ${lampY + 310} Z`} {...draw(0.22)} />
-        <path d={`M${lampX + 145} ${lampY + 310} L${lampX + 145} ${floorY + 4}`} {...draw(0.28)} />
-        <ellipse cx={lampX + 145} cy={floorY + 6} rx={110} ry={16} {...draw(0.32)} />
+        <path d={`M${lampX + lampW * 0.12} ${lampY} L${lampX + lampW * 0.88} ${lampY} L${lampX + lampW} ${lampY + lampH} L${lampX} ${lampY + lampH} Z`} {...draw(0.22)} />
+        <path d={`M${lampX + lampW * 0.5} ${lampY + lampH} L${lampX + lampW * 0.5} ${H * 0.795}`} {...draw(0.28)} />
+        <ellipse cx={lampX + lampW * 0.5} cy={H * 0.8} rx={W * 0.045} ry={H * 0.012} {...draw(0.32)} />
         <circle cx={faceX} cy={faceY} r={132} {...draw(0.24)} />
         <path d={`M${faceX - 44} ${faceY - 30} L${faceX - 30} ${faceY - 30}`} strokeWidth={13} {...draw(0.38)} />
         <path d={`M${faceX + 30} ${faceY - 30} L${faceX + 44} ${faceY - 30}`} strokeWidth={13} {...draw(0.4)} />
         <path d={`M${faceX - 46} ${faceY + 40} Q${faceX} ${faceY + 74} ${faceX + 46} ${faceY + 40}`} {...draw(0.42)} />
-        <path d={`M${potX - 88} ${floorY - 200} L${potX + 88} ${floorY - 200} L${potX + 66} ${floorY} L${potX - 66} ${floorY} Z`} {...draw(0.3)} />
+        <path d={`M${potX - 88} ${floorY} L${potX + 88} ${floorY} L${potX + 66} ${floorY + 200} L${potX - 66} ${floorY + 200} Z`} {...draw(0.3)} />
         {[-52, -26, 0, 26, 52].map((ang, i) => {
           const rad = (ang * Math.PI) / 180;
           const len = 300 - Math.abs(ang) * 1.1;
           const tx = potX + Math.sin(rad) * len;
-          const ty = floorY - 200 - Math.cos(rad) * len;
+          const ty = floorY - Math.cos(rad) * len;
           return (
             <path
               key={i}
-              d={`M${potX} ${floorY - 200} Q${potX + (tx - potX) * 0.35} ${floorY - 200 - len * 0.75} ${tx} ${ty}`}
+              d={`M${potX} ${floorY} Q${potX + (tx - potX) * 0.35} ${floorY - len * 0.75} ${tx} ${ty}`}
               {...draw(0.32 + i * 0.025)}
             />
           );
         })}
-        <circle cx={clockX} cy={clockY} r={96} {...draw(0.18)} />
-        <path d={`M${clockX} ${clockY} L${clockX - 58} ${clockY - 30}`} {...draw(0.44)} />
-        <path d={`M${clockX} ${clockY} L${clockX + 18} ${clockY - 74}`} {...draw(0.46)} />
+        {/* 墙角 */}
+        <path d={`M${W * 0.155} 0 L${W * 0.155} ${floorY}`} stroke={soft} strokeWidth={4} {...draw(0.12)} />
+        <path d={`M${W * 0.925} 0 L${W * 0.925} ${floorY}`} stroke={soft} strokeWidth={4} {...draw(0.13)} />
+        {/* 地板拼缝（近大远小的斜线） */}
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <path
+            key={`f${i}`}
+            d={`M${W * (0.5 + (i - 2.5) * 0.06)} ${floorY + 8} L${W * (0.5 + (i - 2.5) * 0.22)} ${H}`}
+            stroke={soft}
+            strokeWidth={3}
+            {...draw(0.34 + i * 0.01)}
+          />
+        ))}
+        {/* 彩灯串：一根下垂的线 + 一排灯泡 */}
+        <path d={`M-40 ${H * 0.055} Q${W * 0.28} ${H * 0.16} ${W * 0.52} ${H * 0.075} T${W + 40} ${H * 0.06}`} {...draw(0.2)} />
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+          const x = W * (0.06 + i * 0.12);
+          const y = H * (0.075 + Math.sin((i / 7) * Math.PI) * 0.035) + 26;
+          return <circle key={`b${i}`} cx={x} cy={y} r={9} {...draw(0.26 + i * 0.012)} />;
+        })}
+        {/* 墙上的彩签（拍立得） */}
+        {[
+          {x: 0.05, y: 0.10, r: -7, w: 300},
+          {x: 0.845, y: 0.44, r: 9, w: 250},
+          {x: 0.235, y: 0.115, r: -14, w: 340},
+          {x: 0.60, y: 0.055, r: 5, w: 230},
+        ].map((c, i) => {
+          const w0 = c.w;
+          const h0 = w0 * 1.28;
+          const cx0 = W * c.x;
+          const cy0 = H * c.y;
+          return (
+            <g key={`p${i}`} transform={`rotate(${c.r} ${cx0} ${cy0})`}>
+              <rect x={cx0} y={cy0} width={w0} height={h0} rx={6} {...draw(0.36 + i * 0.03)} />
+              <rect x={cx0 + 22} y={cy0 + 22} width={w0 - 44} height={h0 - 44 - w0 * 0.28} {...draw(0.42 + i * 0.03)} />
+              <path d={`M${cx0 + 40} ${cy0 + h0 - 60} L${cx0 + w0 - 60} ${cy0 + h0 - 60}`} stroke={soft} strokeWidth={4} {...draw(0.48 + i * 0.02)} />
+            </g>
+          );
+        })}
+        {/* 窗外的月亮（月牙） */}
+        <path d={`M${winX + winW * 0.78} ${winY + 96} A74 74 0 1 0 ${winX + winW * 0.78} ${winY + 236}`} {...draw(0.44)} />
+        <path d={`M${winX + winW * 0.62} ${winY + winH * 0.9} L${winX + winW * 0.95} ${winY + winH * 0.9}`} stroke={soft} strokeWidth={3} {...draw(0.46)} />
+        {/* 地上的马克杯 */}
+        <path d={`M${mugX - 66} ${mugY - 96} L${mugX + 66} ${mugY - 96} L${mugX + 66} ${mugY - 22} Q${mugX + 66} ${mugY + 8} ${mugX + 30} ${mugY + 8} L${mugX - 30} ${mugY + 8} Q${mugX - 66} ${mugY + 8} ${mugX - 66} ${mugY - 22} Z`} {...draw(0.4)} />
+        <path d={`M${mugX + 66} ${mugY - 76} Q${mugX + 104} ${mugY - 72} ${mugX + 104} ${mugY - 46} Q${mugX + 104} ${mugY - 20} ${mugX + 66} ${mugY - 16}`} {...draw(0.42)} />
+        {/* 墙上的小涂鸦 */}
+        <path d={`M${W * 0.30} ${H * 0.30} l34 0 M${W * 0.30 + 17} ${H * 0.30 - 17} l0 34`} stroke={soft} strokeWidth={4} {...draw(0.5)} />
+        <path d={`M${W * 0.40} ${H * 0.35} l16 -26 l16 26 z`} stroke={soft} strokeWidth={4} {...draw(0.52)} />
+        <path d={`M${W * 0.36} ${H * 0.60} l24 0 M${W * 0.36} ${H * 0.60} q8 14 20 0`} stroke={soft} strokeWidth={4} {...draw(0.54)} />
+        <circle cx={clockX} cy={clockY} r={clockR} {...draw(0.18)} />
+        <path d={`M${clockX} ${clockY} L${clockX - clockR * 0.6} ${clockY - clockR * 0.32}`} {...draw(0.44)} />
+        <path d={`M${clockX} ${clockY} L${clockX + clockR * 0.19} ${clockY - clockR * 0.78}`} {...draw(0.46)} />
       </g>
     </svg>
   );
