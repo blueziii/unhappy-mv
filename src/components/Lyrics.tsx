@@ -14,6 +14,9 @@ const LINES = linesJson as unknown as Line[];
 const ZH_FONT = "'WenKai', 'LXGW WenKai', 'Microsoft YaHei', serif";
 
 /** 中文里和英文 SAD_WORDS 对应的情绪词，单独上糖果红 */
+const ZH_STYLE = 1; // 1=纸带便签 2=逐字浮现 3=手写圈注+印章
+const ZH_MT = 0.22;
+const ZH_GAP = 0.55;
 const ZH_KW_WORDS = ['难过', '难堪', '洞', '百叶窗'];
 const ZH_KW_RE = new RegExp('(' + ZH_KW_WORDS.join('|') + ')');
 
@@ -251,53 +254,145 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
               {line.zh ? (
                 <div
                   style={{
-                    marginTop: size * 0.22,
+                    marginTop: size * ZH_MT,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: zhSize * 0.55,
+                    gap: zhSize * ZH_GAP,
                     maxWidth: '100%',
                   }}
                 >
-                  <span
-                    style={{
-                      width: zhSize * 1.5,
-                      height: 2,
-                      background: dark ? withAlpha(C.paper, 0.42) : withAlpha(C.ink, 0.3),
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: ZH_FONT,
-                      fontSize: zhSize,
-                      fontWeight: 600,
-                      letterSpacing: '0.08em',
-                      lineHeight: 1.3,
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                      color: dark ? withAlpha(C.paper, 0.82) : withAlpha(C.ink, 0.72),
-                      textShadow: dark
-                        ? `0 0 ${(size * 0.12).toFixed(0)}px rgba(255,253,247,0.34)`
-                        : `0 2px 16px rgba(255,253,247,0.9), 0 0 3px rgba(255,253,247,0.7)`,
-                    }}
-                  >
-                    {line.zh.split(ZH_KW_RE).map((part, zi) =>
-                      ZH_KW_WORDS.includes(part) ? (
-                        <span key={zi} style={{color: dark ? '#F6A896' : C.candy}}>
-                          {part}
-                        </span>
-                      ) : (
-                        <span key={zi}>{part}</span>
-                      ),
-                    )}
-                  </span>
-                  <span
-                    style={{
-                      width: zhSize * 1.5,
-                      height: 2,
-                      background: dark ? withAlpha(C.paper, 0.42) : withAlpha(C.ink, 0.3),
-                    }}
-                  />
+                  {ZH_STYLE === 1 ? (
+                    // A：纸带便签（两条纸边 + 关键词大字 + 红笔下划）
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: zhSize * 0.18,
+                        padding: `${(zhSize * 0.24).toFixed(0)}px ${(zhSize * 0.5).toFixed(0)}px`,
+                        background: dark ? 'rgba(30,28,46,0.72)' : 'rgba(255,253,247,0.92)',
+                        borderRadius: 8,
+                        transform: 'rotate(-0.6deg)',
+                        boxShadow: dark
+                          ? '0 10px 30px rgba(0,0,0,0.45)'
+                          : '0 10px 26px rgba(43,43,52,0.16)',
+                        border: `${Math.max(1, zhSize * 0.02).toFixed(1)}px solid ${
+                          dark ? withAlpha(C.paper, 0.22) : withAlpha(C.ink, 0.1)
+                        }`,
+                      }}
+                    >
+                      {line.zh.split(ZH_KW_RE).map((part, zi) =>
+                        ZH_KW_WORDS.includes(part) ? (
+                          <span
+                            key={zi}
+                            style={{
+                              fontFamily: ZH_FONT,
+                              fontSize: zhSize * 1.32,
+                              fontWeight: 700,
+                              color: dark ? '#F6A896' : C.candy,
+                              position: 'relative',
+                              paddingBottom: zhSize * 0.06,
+                              backgroundImage: `linear-gradient(${dark ? '#F6A896' : C.candy}, ${
+                                dark ? '#F6A896' : C.candy
+                              })`,
+                              backgroundRepeat: 'no-repeat',
+                              backgroundSize: '100% 6px',
+                              backgroundPosition: '0 100%',
+                            }}
+                          >
+                            {part}
+                          </span>
+                        ) : (
+                          <span
+                            key={zi}
+                            style={{
+                              fontFamily: ZH_FONT,
+                              fontSize: zhSize,
+                              fontWeight: 600,
+                              letterSpacing: '0.08em',
+                              color: dark ? withAlpha(C.paper, 0.88) : withAlpha(C.ink, 0.78),
+                            }}
+                          >
+                            {part}
+                          </span>
+                        ),
+                      )}
+                    </div>
+                  ) : ZH_STYLE === 2 ? (
+                    // B：逐字浮现 + 双色 + 引导点（无纸带，像字幕机）
+                    <div style={{display: 'flex', alignItems: 'center', gap: zhSize * 0.1}}>
+                      {Array.from(line.zh).map((ch, ci) => {
+                        const lit = clamp01((f - startF - ci * 2.2) / 7);
+                        const isKw = ZH_KW_WORDS.some((w) => line.zh!.includes(w) && w.includes(ch));
+                        return (
+                          <span
+                            key={ci}
+                            style={{
+                              fontFamily: ZH_FONT,
+                              fontSize: zhSize * (isKw ? 1.14 : 1),
+                              fontWeight: isKw ? 700 : 500,
+                              color: isKw
+                                ? dark ? '#F6A896' : C.candy
+                                : dark ? withAlpha(C.paper, 0.86) : withAlpha(C.ink, 0.74),
+                              opacity: lit,
+                              transform: `translateY(${(1 - lit) * zhSize * 0.3}px)`,
+                              letterSpacing: '0.04em',
+                              textShadow: dark ? '0 0 18px rgba(255,253,247,0.28)' : '0 2px 14px rgba(255,253,247,0.85)',
+                            }}
+                          >
+                            {ch}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    // C：手写圈注 + 印章
+                    <div style={{display: 'flex', alignItems: 'center', gap: zhSize * 0.28}}>
+                      <span
+                        style={{
+                          fontFamily: ZH_FONT,
+                          fontSize: zhSize,
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          color: dark ? withAlpha(C.paper, 0.84) : withAlpha(C.ink, 0.74),
+                        }}
+                      >
+                        {line.zh.split(ZH_KW_RE).map((part, zi) =>
+                          ZH_KW_WORDS.includes(part) ? (
+                            <span key={zi} style={{position: 'relative', display: 'inline-block', color: dark ? '#F6A896' : C.candy}}>
+                              {part}
+                              <span
+                                style={{
+                                  position: 'absolute',
+                                  inset: `${-zhSize * 0.22}px ${-zhSize * 0.26}px`,
+                                  border: `${Math.max(2, zhSize * 0.05).toFixed(1)}px solid ${dark ? '#F6A896' : C.candy}`,
+                                  borderRadius: '50%',
+                                  transform: 'rotate(-7deg)',
+                                  opacity: 0.85,
+                                }}
+                              />
+                            </span>
+                          ) : (
+                            <span key={zi}>{part}</span>
+                          ),
+                        )}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: ZH_FONT,
+                          fontSize: zhSize * 0.52,
+                          color: dark ? withAlpha(C.paper, 0.5) : withAlpha(C.ink, 0.42),
+                          border: `${Math.max(2, zhSize * 0.045).toFixed(1)}px solid ${dark ? withAlpha(C.paper, 0.4) : withAlpha(C.ink, 0.3)}`,
+                          padding: `${zhSize * 0.06}px ${zhSize * 0.16}px`,
+                          borderRadius: 4,
+                          transform: 'rotate(-3deg)',
+                          letterSpacing: '0.2em',
+                        }}
+                      >
+                        unhappy
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : null}
             </div>
