@@ -284,7 +284,7 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                         gap: zhSize * 0.2,
                         padding: `${(zhSize * 0.3).toFixed(0)}px ${(zhSize * 0.68).toFixed(0)}px`,
                         background: dark ? 'rgba(92,88,132,0.52)' : 'rgba(255,253,247,0.92)',
-                        borderRadius: 8,
+                        borderRadius: 40, // 与英文贴纸同一个圆角
                         transform: 'rotate(-0.6deg)',
                         boxShadow: dark
                           ? '0 10px 34px rgba(12,10,30,0.5), 0 0 26px rgba(190,186,232,0.16)'
