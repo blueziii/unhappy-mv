@@ -1423,32 +1423,47 @@ export const WallClock: React.FC<{opacity: number; stop?: number; reel?: number;
   const f = useCurrentFrame();
   const nk = clamp01(night);
   const t = f / FPS;
-  // 两圈多一点，越到后面越慢，最后停住；reel 期间倒着走
-  // 分针：本来就该很慢；秒针：一秒跳一格（被歌词 cue 到时会倒着甩）
-  const hand = -90 + 0.5 * t - clamp01(reel) * 420;
-  const sec = -90 + 6 * Math.floor(t) - clamp01(reel) * 900;
+  // 走的是一个真实的钟：4:00 起，时/分/秒三根针各走各的速度
+  //  - 分针 6°/分钟（0.1°/秒），时针跟着分针转 1/12
+  //  - 秒针一秒跳一格；被 stop 拖慢后几乎不动，reel 时整盘倒着甩回去
+  const slow = 1 - clamp01(stop) * 0.94;
+  const elMin = 0.1 * t * slow;
+  const elSec = 6 * Math.floor(t * slow);
+  const reelDeg = clamp01(reel) * 420;
+  const hour = 120 + elMin / 12 - reelDeg / 12;
+  const hand = elMin - reelDeg;
+  const sec = elSec - clamp01(reel) * 900;
+  const inkCol = withAlpha(mix(C.ink, C.paper, nk * 0.5), 0.82);
+  const secCol = withAlpha(mix(C.candy, C.night, nk * 0.35), 1);
   return (
     <div style={{position: 'absolute', left: W * 0.115, top: H * 0.17, opacity}}>
       <svg width="380" height="380" viewBox="0 0 380 380">
         <circle cx="190" cy="190" r="150" fill={withAlpha(mix(C.paper, C.night, nk * 0.45), 1)} stroke={withAlpha(mix(C.candy, C.night, nk * 0.4), 1)} strokeWidth="16" />
         <circle cx="190" cy="190" r="142" fill="none" stroke={withAlpha(mix(C.ink, C.night, nk * 0.4), 0.08 + 0.1 * nk)} strokeWidth="4" />
+        {/* 12 个点位，整点是粗圆点 */}
         {new Array(12).fill(0).map((_, i) => {
           const a = (i / 12) * Math.PI * 2;
           return (
             <circle
               key={i}
-              cx={190 + Math.sin(a) * 116}
-              cy={190 - Math.cos(a) * 116}
+              cx={190 + Math.sin(a) * 122}
+              cy={190 - Math.cos(a) * 122}
               r={i % 3 === 0 ? 9 : 5}
               fill={withAlpha(mix(C.ink, C.paper, nk * 0.5), 0.75)}
             />
           );
         })}
-        <g transform={`rotate(${hand} 190 190)`}>
-          <rect x="183" y="96" width="14" height="96" rx="7" fill={withAlpha(mix(C.ink, C.paper, nk * 0.5), 0.8)} />
+        {/* 时针：短、粗 */}
+        <g transform={`rotate(${hour} 190 190)`} style={{filter: `drop-shadow(3px 4px 2px ${withAlpha(C.ink, 0.22)})`}}>
+          <rect x="182" y="130" width="16" height="62" rx="8" fill={inkCol} />
         </g>
-        <g transform={`rotate(${sec} 190 190)`}>
-          <rect x="186" y="64" width="8" height="126" rx="4" fill={withAlpha(mix(C.candy, C.night, nk * 0.35), 1)} />
+        {/* 分针：细长 */}
+        <g transform={`rotate(${hand} 190 190)`} style={{filter: `drop-shadow(3px 4px 2px ${withAlpha(C.ink, 0.2)})`}}>
+          <rect x="185" y="94" width="10" height="98" rx="5" fill={inkCol} />
+        </g>
+        {/* 秒针：红色细针，末尾一小段压过轴心 */}
+        <g transform={`rotate(${sec} 190 190)`} style={{filter: `drop-shadow(2px 3px 2px ${withAlpha(C.ink, 0.18)})`}}>
+          <rect x="187" y="66" width="6" height="152" rx="3" fill={secCol} />
         </g>
         <circle cx="190" cy="190" r="12" fill={withAlpha(mix(C.ink, C.paper, nk * 0.45), 1)} />
       </svg>
