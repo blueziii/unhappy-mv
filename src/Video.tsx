@@ -136,8 +136,8 @@ export const UnhappyVideo: React.FC = () => {
   // 结尾：世界褪成一张手绘线稿（从边缘往里），开灯时颜色重新灌回来
   const sketchIn = interpolate(t, [82.3, 84.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 线稿→开灯：不是硬切，而是一团暖光从吊灯洒开，把线稿一点点冲掉（0.5s）
-  const sketchOut = interpolate(t, [85.95, 86.4], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const litWipe = interpolate(t, [85.95, 86.45], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const sketchOut = interpolate(t, [85.95, 86.32], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const litWipe = interpolate(t, [85.95, 86.4], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 线稿里的那盏灯先闪三下，然后才轮到真实的灯
   const sketchFlicker = interpolate(
     t,
@@ -605,7 +605,13 @@ export const UnhappyVideo: React.FC = () => {
     {sketch > 0.002 ? (
       <AbsoluteFill style={{transform: worldTf, pointerEvents: 'none'}}>
         <AbsoluteFill style={{transform: stageTf, pointerEvents: 'none'}}>
-          <AbsoluteFill style={{background: C.night, opacity: 0.97 * sketch}} />
+          {/* 底纸：关灯时是墨色，开灯时先暖成纸色再退走 —— 避免"墨+暖"混成灰 */}
+          <AbsoluteFill
+            style={{
+              background: mix(C.night, C.cream, clamp01((t - 85.9) / 0.3)),
+              opacity: 0.97 * sketchIn * (1 - clamp01((t - 86.2) / 0.22)),
+            }}
+          />
           <AbsoluteFill style={{opacity: sketch}}>
             <LineRoom progress={sketch} lampFlicker={sketch > 0.01 ? sketchFlicker : 0} />
           </AbsoluteFill>
