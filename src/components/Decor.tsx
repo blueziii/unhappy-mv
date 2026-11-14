@@ -1609,8 +1609,8 @@ export const Moon: React.FC<{opacity: number}> = ({opacity}) => {
 // 所有坐标都从真实组件反推（WallClock / Lamp / Plant / Mug / Polaroids / RainWindow），不是估的
 export const LineRoom: React.FC<{progress: number}> = ({progress}) => {
   const p = clamp01(progress);
-  const ink = withAlpha(mix(C.ink, C.night, 0.25), 0.92);
-  const soft = withAlpha(C.ink, 0.5);
+  const ink = withAlpha(mix(C.paper, C.sky, 0.28), 0.9);
+  const soft = withAlpha(C.paper, 0.42);
   const draw = (delay: number) => {
     const q = clamp01((p - delay) / Math.max(0.001, 1 - delay));
     return {strokeDasharray: 1, strokeDashoffset: 1 - q, opacity: q > 0 ? 1 : 0} as unknown as {pathLength?: number};
@@ -1646,7 +1646,7 @@ export const LineRoom: React.FC<{progress: number}> = ({progress}) => {
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute', inset: 0}}>
-      <g stroke={ink} fill="none" strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round">
+      <g stroke={ink} fill="none" strokeWidth={6.5} strokeLinecap="round" strokeLinejoin="round" style={{filter: 'drop-shadow(0 0 7px rgba(255,250,235,0.42))'}}>
         {/* 地平线 + 踢脚线 */}
         <path d={`M-40 ${floorY} L${W + 40} ${floorY}`} {...D(0)} />
         <path d={`M-40 ${floorY + 34} L${W + 40} ${floorY + 34}`} stroke={soft} strokeWidth={4} {...D(0.06)} />
