@@ -229,6 +229,8 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                   columnGap: giantGap(size),
                   rowGap: size * 0.22,
                   maxWidth: '100%',
+                  position: 'relative',
+                  zIndex: 2, // 英文贴纸永远压中文一层
                 }}
               >
               {line.words.map((w, wi) => {
@@ -262,6 +264,8 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                 <div
                   style={{
                     marginTop: size * ZH_MT,
+                    position: 'relative',
+                    zIndex: 1,
                     transform: `translateY(${((1 - zPop) * 46 + zBob).toFixed(1)}px) rotate(${zSway.toFixed(2)}deg) scale(${zPop.toFixed(3)})`,
                     opacity: clamp01((f - startF - 2) / 8),
                     display: 'flex',
