@@ -109,20 +109,20 @@ export const UnhappyVideo: React.FC = () => {
 
   // ---- 结尾复位：唱完之后房间重新亮起来，最后停回第 0 帧的样子，循环播放没有接缝 ----
   // 88.55s 起灯“啪”地闪两下重新亮起；90–93.4s 冷色调褪回暖色；94.8–97.6s 环境收回开场姿态
-  const relightFx = interpolate(t, [84.55, 84.67, 84.77, 84.89, 85.0, 85.2], [0, 1, 0.12, 0.86, 0.2, 1], {
+  const relightFx = interpolate(t, [85.80, 85.92, 86.02, 86.14, 86.24, 86.46], [0, 1, 0.12, 0.86, 0.2, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const relight = interpolate(t, [84.55, 85.75], [0, 1], {
+  const relight = interpolate(t, [85.80, 87.0], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
   // 开灯瞬间的暖光过曝：灯管"啪"一下亮透，再收回正常曝光
-  const relightBloom = interpolate(t, [84.55, 85.0, 85.35, 85.85], [0, 0.28, 0.12, 0], {
+  const relightBloom = interpolate(t, [85.80, 86.2, 86.55, 87.05], [0, 0.28, 0.12, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const loopBack = interpolate(t, [86.0, 90.4], [0, 1], {
+  const loopBack = interpolate(t, [87.2, 91.4], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -132,14 +132,21 @@ export const UnhappyVideo: React.FC = () => {
   const relightCol = 1 - (1 - relight) * (1 - relight);
   const keep = 1 - relightCol;
   // 冷色调的退场：跟着灯闪那一下直接切回暖色（用户要求：不要 1 秒慢慢变亮）
-  const warmCut = interpolate(t, [84.55, 84.78], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const warmCut = interpolate(t, [85.80, 86.05], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 结尾：世界褪成一张手绘线稿（从边缘往里），开灯时颜色重新灌回来
-  const sketchIn = interpolate(t, [82.9, 84.45], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  const sketchOut = interpolate(t, [84.5, 85.15], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const sketchIn = interpolate(t, [82.3, 84.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const sketchOut = interpolate(t, [85.8, 86.35], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  // 线稿里的那盏灯先闪三下，然后才轮到真实的灯
+  const sketchFlicker = interpolate(
+    t,
+    [85.30, 85.40, 85.50, 85.60, 85.70, 85.86],
+    [0, 1, 0.08, 0.9, 0.05, 1],
+    {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}
+  );
   const sketch = sketchIn * sketchOut;
   const keepGrade = 1 - warmCut;
   // 哭脸变回笑脸：比开灯慢得多，6 秒多慢慢回来
-  const smileBack = interpolate(t, [85.2, 91.4], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const smileBack = interpolate(t, [86.4, 92.4], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   // 最后溶到第 0 帧的静帧（房间空下来之后，循环接缝零误差）
   const loopSeal = interpolate(t, [92.4, 95.4], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 
@@ -160,7 +167,7 @@ export const UnhappyVideo: React.FC = () => {
   const _camX = Math.sin(tD / 9.5) * 46 + Math.sin(tD / 3.7) * 10;
   const _camY = Math.cos(tD / 12) * 30 + Math.cos(tD / 4.3) * 8;
   // 结尾：镜头极慢地回到第 0 帧的机位（只有几十像素和 2.7°，看不出来，但循环接缝是齐的）
-  const camBack = interpolate(t, [91.5, 97.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const camBack = interpolate(t, [92.2, 97.6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const camYaw = _camYaw * (1 - camBack);
   const camPitch = _camPitch * (1 - camBack) + 2.7 * camBack;
   const camRoll = _camRoll * (1 - camBack);
@@ -245,7 +252,7 @@ export const UnhappyVideo: React.FC = () => {
     {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}
   );
   // 结尾：灯重新亮起（闪两下再稳住）
-  const lampOn = t >= 84.5 ? relightFx : lampOnBase;
+  const lampOn = t >= 85.75 ? relightFx : lampOnBase;
   // 关灯那一下灯罩的抖动
   const lampJolt = t >= 48.94 && t < 49.7 ? Math.sin((t - 48.94) * 74) * 6 * (1 - (t - 48.94) / 0.76) : 0;
   // 灯灭之后整幅画面变暗、换色调（压暗但依然看得清东西）
@@ -293,7 +300,7 @@ export const UnhappyVideo: React.FC = () => {
   const eSong = Math.max(eIntro, eVerse, eChorus);
   // 房间道具（钟、伞、杯、纸团）从第一句歌词开始出现，片头标题保持干净
   // 房间道具从片头过去之后一直在，别跟段落包络（交界处会掉到 0，道具就闪一下）
-  const propOp = 0.92 * clamp01((t - 16.2) / 1.6) * (1 - clamp01((t - 89.6) / 2.2));
+  const propOp = 0.92 * clamp01((t - 16.2) / 1.6) * (1 - clamp01((t - 90.6) / 2.2));
   // 暗场里挂钟必须完全不透明，否则会透出后面的拍立得
   const clockOp = 0.85 * propOp + (1 - 0.85 * propOp) * clamp01(darkAmt);
   const lampVis = 0.9 * (1 - drain * 0.5);
@@ -598,7 +605,7 @@ export const UnhappyVideo: React.FC = () => {
         <AbsoluteFill style={{transform: stageTf, pointerEvents: 'none'}}>
           <AbsoluteFill style={{background: C.night, opacity: 0.97 * sketch}} />
           <AbsoluteFill style={{opacity: sketch}}>
-            <LineRoom progress={sketch} />
+            <LineRoom progress={sketch} lampFlicker={sketch > 0.01 ? sketchFlicker : 0} />
           </AbsoluteFill>
         </AbsoluteFill>
       </AbsoluteFill>

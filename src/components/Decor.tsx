@@ -1607,7 +1607,7 @@ export const Moon: React.FC<{opacity: number}> = ({opacity}) => {
 
 // ——— 线稿版房间：结尾处世界"褪成一张手绘底稿"，开灯时颜色再灌回来 ———
 // 所有坐标都从真实组件反推（WallClock / Lamp / Plant / Mug / Polaroids / RainWindow），不是估的
-export const LineRoom: React.FC<{progress: number}> = ({progress}) => {
+export const LineRoom: React.FC<{progress: number; lampFlicker?: number}> = ({progress, lampFlicker = 0}) => {
   const p = clamp01(progress);
   const ink = withAlpha(mix(C.paper, C.sky, 0.28), 0.9);
   const soft = withAlpha(C.paper, 0.42);
@@ -1679,6 +1679,15 @@ export const LineRoom: React.FC<{progress: number}> = ({progress}) => {
         <ellipse cx={300} cy={1118} rx={96} ry={16} {...D(0.24)} />
         <path d={`M300 1114 L300 ${floorY}`} strokeWidth={10} {...D(0.26)} />
         <ellipse cx={300} cy={floorY + 8} rx={110} ry={20} {...D(0.28)} />
+        {/* 线稿里的灯先亮：罩子被自己打亮 + 一圈暖光 */}
+        {lampFlicker > 0.02 ? (
+          <g opacity={lampFlicker}>
+            <ellipse cx={300} cy={1090} rx={230} ry={200} fill={withAlpha(C.butter, 0.34)} style={{filter: 'blur(46px)'}} stroke="none" />
+            <path d={`M150 974 L450 974 L396 1114 L204 1114 Z`} stroke={withAlpha(C.butter, 0.95)} strokeWidth={9} />
+            <ellipse cx={300} cy={1118} rx={96} ry={16} stroke={withAlpha(C.butter, 1)} strokeWidth={7} />
+            <path d={`M240 1140 L360 1140 L470 ${floorY + 10} L130 ${floorY + 10} Z`} stroke={withAlpha(C.butter, 0.35)} strokeWidth={3} />
+          </g>
+        ) : null}
         {/* 笑脸 */}
         <circle cx={faceCx} cy={faceCy} r={132} {...D(0.3)} />
         <path d={`M${faceCx - 46} ${faceCy - 28} L${faceCx - 30} ${faceCy - 28}`} strokeWidth={14} {...D(0.34)} />
