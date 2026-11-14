@@ -268,8 +268,8 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                       style={{
                         display: 'flex',
                         alignItems: 'baseline',
-                        gap: zhSize * 0.18,
-                        padding: `${(zhSize * 0.24).toFixed(0)}px ${(zhSize * 0.5).toFixed(0)}px`,
+                        gap: zhSize * 0.2,
+                        padding: `${(zhSize * 0.3).toFixed(0)}px ${(zhSize * 0.68).toFixed(0)}px`,
                         background: dark ? 'rgba(30,28,46,0.72)' : 'rgba(255,253,247,0.92)',
                         borderRadius: 8,
                         transform: 'rotate(-0.6deg)',
@@ -291,16 +291,23 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                               fontWeight: 700,
                               color: dark ? '#F6A896' : C.candy,
                               position: 'relative',
-                              paddingBottom: zhSize * 0.06,
-                              backgroundImage: `linear-gradient(${dark ? '#F6A896' : C.candy}, ${
-                                dark ? '#F6A896' : C.candy
-                              })`,
-                              backgroundRepeat: 'no-repeat',
-                              backgroundSize: '100% 6px',
-                              backgroundPosition: '0 100%',
+                              display: 'inline-block',
                             }}
                           >
                             {part}
+                            {/* 红笔随手圈的椭圆 */}
+                            <span
+                              style={{
+                                position: 'absolute',
+                                inset: `${-zhSize * 0.24}px ${-zhSize * 0.3}px`,
+                                border: `${Math.max(2.5, zhSize * 0.055).toFixed(1)}px solid ${
+                                  dark ? '#F6A896' : C.candy
+                                }`,
+                                borderRadius: '50%',
+                                transform: 'rotate(-7deg)',
+                                opacity: 0.9,
+                              }}
+                            />
                           </span>
                         ) : (
                           <span
@@ -376,20 +383,6 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                             <span key={zi}>{part}</span>
                           ),
                         )}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: ZH_FONT,
-                          fontSize: zhSize * 0.52,
-                          color: dark ? withAlpha(C.paper, 0.5) : withAlpha(C.ink, 0.42),
-                          border: `${Math.max(2, zhSize * 0.045).toFixed(1)}px solid ${dark ? withAlpha(C.paper, 0.4) : withAlpha(C.ink, 0.3)}`,
-                          padding: `${zhSize * 0.06}px ${zhSize * 0.16}px`,
-                          borderRadius: 4,
-                          transform: 'rotate(-3deg)',
-                          letterSpacing: '0.2em',
-                        }}
-                      >
-                        unhappy
                       </span>
                     </div>
                   )}
