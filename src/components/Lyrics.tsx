@@ -270,14 +270,15 @@ export const LyricStage: React.FC<{drain: number; dark?: boolean}> = ({drain, da
                         alignItems: 'baseline',
                         gap: zhSize * 0.2,
                         padding: `${(zhSize * 0.3).toFixed(0)}px ${(zhSize * 0.68).toFixed(0)}px`,
-                        background: dark ? 'rgba(30,28,46,0.72)' : 'rgba(255,253,247,0.92)',
+                        background: dark ? 'rgba(92,88,132,0.52)' : 'rgba(255,253,247,0.92)',
                         borderRadius: 8,
                         transform: 'rotate(-0.6deg)',
                         boxShadow: dark
-                          ? '0 10px 30px rgba(0,0,0,0.45)'
+                          ? '0 10px 34px rgba(12,10,30,0.5), 0 0 26px rgba(190,186,232,0.16)'
                           : '0 10px 26px rgba(43,43,52,0.16)',
+                        backdropFilter: dark ? 'blur(2px)' : undefined,
                         border: `${Math.max(1, zhSize * 0.02).toFixed(1)}px solid ${
-                          dark ? withAlpha(C.paper, 0.22) : withAlpha(C.ink, 0.1)
+                          dark ? 'rgba(206,202,238,0.34)' : withAlpha(C.ink, 0.1)
                         }`,
                       }}
                     >
