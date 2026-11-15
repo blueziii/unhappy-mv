@@ -3,6 +3,8 @@
 用 Remotion 做的 4K60 动画 MV：糖果色的欢快外壳，底下慢慢渗出悲伤（雨、垮掉的笑脸、褪成灰的尾奏）。
 
 - 成片：`out/unhappy-mv.mp4` — 3840×2160 / 60fps / 98.1s / H.264 + AAC 320k
+- 封面：`cover/`（4:3 2880×2160 与 16:9 3840×2160，各含 PNG + JPG）
+- 同款复刻：**[STYLE-PROMPT.md](STYLE-PROMPT.md)** —— 提示词包 + 本片完整参数（配色/时间轴/元素/夜戏配方/踩坑清单）
 - 工程：Remotion 4.0.543 + React 19
 
 ## 目录
@@ -25,8 +27,10 @@ src/
                       Drift / Balloons / Sparkles / StringLights / Polaroids / RainWindow /
                       RoomFloor / Curtains / Plant / Lamp / HangingLamp / Suitcase /
                       Smiley / Heart / Equalizer，以及 3D 视差层 Layer
-    Lyrics.tsx        词级弹跳贴纸歌词（弹簧进场 + 阻尼振荡；未唱的词是浅色幽灵字）
-    Title.tsx         标题卡（字母逐拍砸落）与角标
+    Lyrics.tsx        词级弹跳贴纸歌词（弹簧进场 + 阻尼振荡；未唱的词是浅色幽灵字）+ 中文翻译纸带
+    Title.tsx         标题卡（字母逐拍砸落）与角标（夜里可切换浅色字）
+  Cover.tsx           4:3 平台封面合成（Cover1..4）
+  CoverDark.tsx       备用黑底海报合成
 tools/                音频/歌词/节拍分析与对齐脚本：
                       analyze（逐帧能量）· tempo（BPM/相位）· merge_words
                       align_lines（逐句强制对齐）· merge_words2（逐句结果择优并入 words.json）
@@ -41,8 +45,9 @@ tools/                音频/歌词/节拍分析与对齐脚本：
 | 16.6–33.0 | 主歌 1 | 手账涂鸦墙、飘浮小涂鸦、蓝紫冷色 |
 | 33.0–49.4 | 副歌 1 | 放射舞台光、气球、星芒、暖糖果色 |
 | 49.4–65.6 | 主歌 2 | 拍立得回忆、彩灯；56.5s 房间上方亮起吊灯，唱到 "misery" 时灯闪两下灭掉，房间转成冷紫夜色（60.2–65.2s） |
-| 65.6–81.6 | 副歌 2 | 更热的副歌，心被刺穿（81.6s "heart"） |
-| 81.6–98.1 | 尾奏 | 窗口长大到满屏、大雨、饱和度抽干、结束卡 |
+| 65.6–81.6 | 副歌 2 | 更热的副歌；末句 "piercing through my heart" 收在 82.26s |
+| 82.3–86.4 | 线稿 | 世界一笔一笔褪成墨底白线（`LineRoom`），停住 1.2s；线稿里的吊灯先闪 |
+| 85.9–98.1 | 重新开灯 | 真灯闪两下亮起、冷色 0.25s 切回暖色、彩签逐张掉落、镜头缓慢回到开场机位——**最后一帧 = 第 0 帧**，循环无痕 |
 
 ## 常用命令
 
@@ -63,9 +68,15 @@ Remotion 自带的 ffmpeg 在本机会崩（`write EOF`），所以走"帧序列
   -c:a aac -b:a 320k -shortest -movflags +faststart out/unhappy-mv.mp4
 ```
 
-现成脚本：`tools/render_all.sh [起始帧]`（每段 500 帧、失败重试）、`tools/encode.sh`（归一文件名 + 编码）、`tools/watch_and_encode.sh`（帧齐自动编码）。
+现成脚本：
+- `tools/render_all.ps1`（推荐；每段 500 帧、失败重试、校验帧数）
+- `tools/encode.sh`（归一文件名 → 编码；主线 `libx264 -preset slow -crf 15 -tune film`，兜底 NVENC）
+- `tools/sheets.py`（把 `out/review` 的抽查帧拼成接触表）
+- `tools/render_then_shutdown.ps1`（渲完 → 编码 → 校验 → 关机；注意它内部直接调 ffmpeg，别去调 bash）
 
-> 86.8s 之后画面是静止的歌名卡，所以只渲到第 5229 帧，5230–5888 用同一帧复制填充，省下约 40 分钟。
+画面之外的小工具：`tools/align_lines.py`（逐句强制对齐）、`tools/merge_words2.py`（择优并入 `words.json`）。
+
+> 结尾段有大量静止帧时，可以只渲到最后一帧再复制填充（本片早期版本用过这招省 40 分钟）；现在结尾有开灯/掉落动画，需整段渲。
 
 ## 性能注意（都是实测踩出来的）
 
@@ -73,7 +84,7 @@ Remotion 自带的 ffmpeg 在本机会崩（`write EOF`），所以走"帧序列
 - 渲染是"无头 Chrome 逐帧截图"，走软件光栅化，**GPU 基本不参与**；4K 单帧成本高。
 - 不要开多进程并行（实测反而慢 4 倍，Chrome 实例互相抢内存）。
 - 别给每个粒子加 `filter: blur()`、别用全屏 `blur()`，软件渲染下极贵；用径向渐变代替。
-- 3D 视差用大 perspective（12000）配小 z 补偿缩放，避免图层按 1.4 倍重栅格化。
+- 视差不要用 `preserve-3d` + `translateZ`（在带 `filter` 的祖先里会被压平、排序失效）：改成每层按 `z·sin(偏航/俯仰)` 主动位移 + `zIndex: z + 2000` 显式排序。
 - 全片 `saturate()` 只在尾奏才挂，前 80% 时间不要给整棵树加滤镜。
 - 静态图层加 `willChange: 'transform'`，让它只被合成、不重绘。
 
@@ -82,3 +93,16 @@ Remotion 自带的 ffmpeg 在本机会崩（`write EOF`），所以走"帧序列
 - 音频：网易云 `id=3332771263`（下载到 `src/assets/song.mp3`）
 - 歌词：LRC 时间轴 + Qwen3-ForcedAligner 强制对齐得到词级时间
 - 字体：Google Fonts（OFL）
+
+## 封面
+
+`src/Cover.tsx` 出 4:3 平台封面：上半放完整 16:9 原帧（不裁），下半是信息带。
+
+```bash
+npx remotion still Cover1 out/cover1.png --frame=0 --gl=angle   # Cover1..4 对应四个段落
+```
+
+道具/调色开关（都挂在 `UnhappyVideo` 上，只影响封面渲染，不影响成片）：
+`forceProps`（道具一开场就在）、`forceDark`（强制关灯调色）、`coverInset`（道具向中间收）、`Equalizer` 的 `lift`（音频条上提）。
+
+另有一批"每 30 帧一张"的抽查与对比脚本产物在 `out/`（不入库）。
