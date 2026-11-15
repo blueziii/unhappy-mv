@@ -496,7 +496,7 @@ export const Suitcase: React.FC<{app: number; slide?: number; drain?: number}> =
 };
 
 /** 底部律动条：把“欢快的节奏”直接画出来 */
-export const Equalizer: React.FC<{opacity: number; flat: number; night?: number}> = ({opacity, flat, night = 0}) => {
+export const Equalizer: React.FC<{opacity: number; flat: number; night?: number; lift?: number}> = ({opacity, flat, night = 0, lift = 0}) => {
   const nk = clamp01(night);
   const f = useCurrentFrame();
   const p = pulse(f, 15);
@@ -536,7 +536,7 @@ export const Equalizer: React.FC<{opacity: number; flat: number; night?: number}
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 96,
+        bottom: 96 + lift,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-end',

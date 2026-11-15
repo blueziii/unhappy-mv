@@ -24,21 +24,21 @@ PY
 
 FFMPEG="/c/Program Files (x86)/ffmpeg/bin/ffmpeg.exe"
 
-# 主路径：NVENC 硬件编码（3060 Ti，实测 120 帧 4K 约 4s；libx264 slow 约 20s）
+# 主路径：libx264 slow crf15（最高画质）；NVENC 作为兜底
 "$FFMPEG" -y \
   -framerate 60 -start_number 0 -i out/seq/element-%04d.jpeg \
   -i src/assets/song.mp3 \
   -map 0:v -map 1:a \
-  -c:v h264_nvenc -preset p6 -rc vbr -cq 21 -b:v 0 -multipass disabled \
+  -c:v libx264 -preset slow -crf 15 -tune film \
   -pix_fmt yuv420p -profile:v high -level 5.2 \
   -c:a aac -b:a 320k -shortest -movflags +faststart \
   out/unhappy-mv.mp4 || {
-    echo "NVENC 失败，回退 libx264"
+    echo "libx264 失败，回退 NVENC"
     "$FFMPEG" -y \
       -framerate 60 -start_number 0 -i out/seq/element-%04d.jpeg \
       -i src/assets/song.mp3 \
       -map 0:v -map 1:a \
-      -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -profile:v high -level 5.2 \
+      -c:v h264_nvenc -preset p6 -rc vbr -cq 21 -b:v 0 -multipass disabled -pix_fmt yuv420p -profile:v high -level 5.2 \
       -c:a aac -b:a 320k -shortest -movflags +faststart \
       out/unhappy-mv.mp4
   }

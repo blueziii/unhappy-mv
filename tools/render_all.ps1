@@ -17,7 +17,7 @@ while ($start -lt $TOTAL) {
   $have = 0
   for ($try = 1; $try -le 3 -and -not $ok; $try++) {
     Add-Content 'out/render.log' "[$((Get-Date).ToString('HH:mm:ss'))] chunk $start-$end try $try"
-    & $NPX remotion render Unhappy $OUT --sequence --frames="$start-$end" --concurrency=$CONC --jpeg-quality=92 --gl=angle *>> 'out/render.log'
+    & $NPX remotion render Unhappy $OUT --sequence --frames="$start-$end" --concurrency=$CONC --jpeg-quality=97 --gl=angle *>> 'out/render.log'
     $have = (Get-ChildItem $OUT -Filter 'element-*.jpeg' | Where-Object {
         $m = [regex]::Match($_.Name, '(\d+)')
         if ($m.Success) { $n = [int]$m.Groups[1].Value; $n -ge $start -and $n -le $end } else { $false }

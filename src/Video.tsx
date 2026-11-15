@@ -103,7 +103,8 @@ const mixCol = (p: any, q: any, w: number) => ({
   cheer: p.cheer + (q.cheer - p.cheer) * w,
 });
 
-export const UnhappyVideo: React.FC = () => {
+export const UnhappyVideo: React.FC<{forceDark?: number; forceProps?: number; coverInset?: number}> = ({forceDark, forceProps, coverInset}) => {
+  const ci = coverInset ?? 0;
   const f = useCurrentFrame();
   const t = f / FPS;
 
@@ -258,7 +259,7 @@ export const UnhappyVideo: React.FC = () => {
   // 关灯那一下灯罩的抖动
   const lampJolt = t >= 48.94 && t < 49.7 ? Math.sin((t - 48.94) * 74) * 6 * (1 - (t - 48.94) / 0.76) : 0;
   // 灯灭之后整幅画面变暗、换色调（压暗但依然看得清东西）
-  const darkAmt = interpolate(t, [48.94, 49.12], [0, 1], {
+  const darkAmt = forceDark !== undefined ? clamp01(forceDark) : interpolate(t, [48.94, 49.12], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   }) * keepGrade;
@@ -302,7 +303,10 @@ export const UnhappyVideo: React.FC = () => {
   const eSong = Math.max(eIntro, eVerse, eChorus);
   // 房间道具（钟、伞、杯、纸团）从第一句歌词开始出现，片头标题保持干净
   // 房间道具从片头过去之后一直在，别跟段落包络（交界处会掉到 0，道具就闪一下）
-  const propOp = 0.92 * clamp01((t - 16.2) / 1.6) * (1 - clamp01((t - 90.6) / 2.2));
+  const propOp =
+    forceDark !== undefined || forceProps !== undefined
+      ? 0.92 * (1 - clamp01((t - 90.6) / 2.2))
+      : 0.92 * clamp01((t - 16.2) / 1.6) * (1 - clamp01((t - 90.6) / 2.2));
   // 暗场里挂钟必须完全不透明，否则会透出后面的拍立得
   const clockOp = 0.85 * propOp + (1 - 0.85 * propOp) * clamp01(darkAmt);
   const lampVis = 0.9 * (1 - drain * 0.5);
@@ -420,10 +424,14 @@ export const UnhappyVideo: React.FC = () => {
               <WallClock opacity={clockOp * (1 - drain * 0.4)} stop={clockStop} reel={clockReel} night={darkAmt} />
             </Layer>
             <Layer z={-520}>
-              <Plant opacity={0.85 * (1 - drain * 0.35)} wilt={wiltP} drain={drain} night={darkAmt} />
+              <div style={{position: 'absolute', inset: 0, transform: `translateX(${-ci}px)`}}>
+                <Plant opacity={0.85 * (1 - drain * 0.35)} wilt={wiltP} drain={drain} night={darkAmt} />
+              </div>
             </Layer>
             <Layer z={-360}>
-              <Lamp opacity={lampVis} drain={drain} night={darkAmt} />
+              <div style={{position: 'absolute', inset: 0, transform: `translateX(${ci}px)`}}>
+                <Lamp opacity={lampVis} drain={drain} night={darkAmt} />
+              </div>
             </Layer>
             <Layer z={-300}>
               <Mug
@@ -470,10 +478,11 @@ export const UnhappyVideo: React.FC = () => {
                   opacity={(inIntro ? clamp01((t - 7.5) / 1.5) * 0.9 : 0.95) * (1 - clamp01(darkAmt * 2)) * (1 - loopBack)}
                   flat={drain * 0.8}
                   night={darkAmt}
+                  lift={ci * 0.55}
                 />
 
                 {/* 片头标题照常一个字母一个字母砸下来；结尾会回到“标题还没出现”的那一帧，循环时刚好接上 */}
-                {t < 16.8 ? <TitleCard drain={drain} out={titleOut} /> : null}
+                {t < 16.8 ? <TitleCard drain={drain} out={titleOut} night={forceDark !== undefined ? 1 : 0} /> : null}
               </AbsoluteFill>
             </Layer>
 
@@ -486,7 +495,7 @@ export const UnhappyVideo: React.FC = () => {
             </Layer>
             {/* 笑脸：一直在，慢慢垮掉。单独一层，不跟标题的打点抖动一起晃 */}
             <Layer z={6}>
-              <div style={{position: 'absolute', left: 560, top: H - 680, opacity: 0.96 * (1 - drain * 0.25)}}>
+              <div style={{position: 'absolute', left: 560 + ci, top: H - 680, opacity: 0.96 * (1 - drain * 0.25)}}>
                 <Smiley
                   sadness={sadness}
                   crack={crack}

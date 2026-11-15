@@ -13,7 +13,8 @@ const rnd = (seed: number) => {
 };
 
 /** 片头：贴纸字母一个一个砸下来 */
-export const TitleCard: React.FC<{drain: number; out: number}> = ({drain, out}) => {
+export const TitleCard: React.FC<{drain: number; out: number; night?: number}> = ({drain, out, night = 0}) => {
+  const nk = Math.max(0, Math.min(1, night));
   const f = useCurrentFrame();
   const t = f / 60;
 
@@ -47,7 +48,7 @@ export const TitleCard: React.FC<{drain: number; out: number}> = ({drain, out}) 
           fontFamily: F.mono,
           fontSize: 32,
           letterSpacing: '0.42em',
-          color: mix(C.inkSoft, C.gray, drain),
+          color: mix(mix(C.inkSoft, C.gray, drain), C.paper, nk * 0.75),
           opacity: 0.75 * clamp01((t - 1.0) / 0.8),
           marginBottom: 34,
           textTransform: 'uppercase',
@@ -72,11 +73,11 @@ export const TitleCard: React.FC<{drain: number; out: number}> = ({drain, out}) 
                 fontWeight: 700,
                 fontSize: 320,
                 lineHeight: 1,
-                color: C.ink,
-                background: mix(COLOR[i], C.gray, drain),
+                color: mix(C.ink, C.paper, nk),
+                background: mix(mix(COLOR[i], C.gray, drain), C.night, nk * 0.62),
                 padding: '0.02em 0.10em 0.05em',
                 borderRadius: 62,
-                boxShadow: `0 20px 0 ${withAlpha(C.ink, 0.14)}, 0 34px 60px ${withAlpha(C.ink, 0.12)}`,
+                boxShadow: `0 20px 0 ${withAlpha(nk > 0.5 ? C.night : C.ink, 0.14)}, 0 34px 60px ${withAlpha(nk > 0.5 ? C.night : C.ink, 0.12)}`,
                 transform: `translateY(${(1 - pop) * -240 + bob}px) rotate(${rot}deg) scale(${0.7 + 0.3 * pop})`,
                 opacity: p,
                 visibility: p <= 0.01 ? 'hidden' : 'visible',
@@ -103,7 +104,7 @@ export const TitleCard: React.FC<{drain: number; out: number}> = ({drain, out}) 
             fontFamily: F.round,
             fontWeight: 600,
             fontSize: 96,
-            color: C.ink,
+            color: mix(C.ink, C.paper, nk),
             letterSpacing: '0.02em',
           }}
         >
